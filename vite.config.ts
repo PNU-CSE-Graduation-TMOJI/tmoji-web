@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import svgr from "vite-plugin-svgr";
 
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
@@ -11,6 +12,7 @@ export default defineConfig({
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     viteReact(),
     tailwindcss(),
+    svgr(),
   ],
   resolve: {
     alias: {

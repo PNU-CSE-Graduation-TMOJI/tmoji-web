@@ -18,11 +18,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     <>
       <main className={c("w-svw", "h-svh", "min-w-", "flex", "flex-col")}>
         <Header />
-
         <Outlet />
       </main>
-      <TanStackRouterDevtools />
 
+      <TanStackRouterDevtools />
       <TanStackQueryLayout />
     </>
   ),
