@@ -1,12 +1,54 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
+
+@theme {
+  --color-tmoji-dark-orange: #c26700;
+  --color-tmoji-orange: #eb9408;
+  --color-tmoji-light-orange: #ffb247;
+  --color-tomji-dark-grey: #292929;
+  --color-tmoji-grey: #3b3b3b;
+  --color-tmoji-light-grey: #575757;
+  --color-tmoji-white-grey: #dfe1e6;
+  --color-tmoji-white-light-grey: #f6f6fa;
+  --color-tmoji-white: #ffffff;
+  --color-tmoji-red: #cd0f0f;
+}
+
+@layer utilities {
+  .bg-tmoji-orange-linear {
+    background-image: linear-gradient(121deg, #fdc830 8.25%, #f37335 93.25%);
+  }
+  .bg-tmoji-grey-radial {
+    background-image: radial-gradient(
+      214.05% 50% at 50% 50%,
+      #292929 0%,
+      rgba(41, 41, 41, 0.5) 100%
+    );
+  }
+}
 
 body {
   @apply m-0;
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    "Pretendard Variable",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    "Helvetica Neue",
+    "Segoe UI",
+    "Apple SD Gothic Neo",
+    "Noto Sans KR",
+    "Malgun Gothic",
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: radial-gradient(173.05% 111.99% at 0% 0%, #292929 0%, #000 100%);
+  color: white;
 }
 
 code {
