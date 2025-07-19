@@ -9,9 +9,17 @@ import SquareIconButton from "@/components/common/button/SquareIconButton";
 import PlusIcon from "@/assets/icons/plus.svg?react";
 import ResetIcon from "@/assets/icons/refresh.svg?react";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
+import ListSelect from "@/components/common/select/ListSelect";
 
 type Step = "IMAGE-UPLOAD" | "SELECT-SERVICE" | "SELECT-LANGUAGE";
 type TranslateMode = "MACHINE" | "AI";
+type Language = "KO" | "EN" | "JP";
+
+const languageOptions: Record<Language, string> = {
+  KO: "한국어",
+  EN: "English",
+  JP: "日本語",
+};
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -41,6 +49,7 @@ function App() {
   const [translateMode, setTranslateMode] = useState<TranslateMode>("MACHINE");
 
   // Step - SELECT-LANGUAGE
+  const [language, setLanguage] = useState<Language | null>(null);
 
   switch (step) {
     case "IMAGE-UPLOAD":
@@ -156,6 +165,25 @@ function App() {
                 AI 이미지 번역
               </button>
             </div>
+          </ContentWrapper>
+        </div>
+      );
+    case "SELECT-LANGUAGE":
+      return (
+        <div className={c()}>
+          <ContentWrapper
+            title="원본 이미지의 언어를 선택해 주세요"
+            subtitle="번역할 원본 텍스트의 언어를 선택해 주세요."
+          >
+            <div className={c("w-[100px]")} />
+            <ListSelect
+              options={languageOptions}
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+            />
+            <SquareIconButton>
+              <NextIcon width={40} height={40} />
+            </SquareIconButton>
           </ContentWrapper>
         </div>
       );
