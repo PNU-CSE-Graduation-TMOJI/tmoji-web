@@ -28,7 +28,15 @@ export default function ContentWrapper({
         )}
       </div>
       {children ? (
-        <div className={c("flex", "justify-center", "gap-36", "min-h-[440px]")}>
+        <div
+          className={c(
+            "flex",
+            "justify-center",
+            "gap-36",
+            "min-h-[440px]",
+            "items-center",
+          )}
+        >
           {children}
         </div>
       ) : (
