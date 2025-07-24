@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StepTwoBoundingRouteImport } from './routes/step-two/bounding'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StepTwoBoundingRoute = StepTwoBoundingRouteImport.update({
+  id: '/step-two/bounding',
+  path: '/step-two/bounding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/step-two/bounding': typeof StepTwoBoundingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/step-two/bounding': typeof StepTwoBoundingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/step-two/bounding': typeof StepTwoBoundingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/step-two/bounding'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/step-two/bounding'
+  id: '__root__' | '/' | '/step-two/bounding'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  StepTwoBoundingRoute: typeof StepTwoBoundingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/step-two/bounding': {
+      id: '/step-two/bounding'
+      path: '/step-two/bounding'
+      fullPath: '/step-two/bounding'
+      preLoaderRoute: typeof StepTwoBoundingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  StepTwoBoundingRoute: StepTwoBoundingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

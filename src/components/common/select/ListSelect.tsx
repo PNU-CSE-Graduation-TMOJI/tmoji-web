@@ -1,16 +1,16 @@
 import c from "@/utils/c";
 
-type Width = "base";
+type Size = "sm" | "base";
 
 interface ListSelectProps {
-  width?: Width;
+  size?: Size;
   options: Record<string, string>;
   value: string | null;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
 export default function ListSelect({
-  width = "base",
+  size = "base",
   options,
   value,
   onChange,
@@ -42,14 +42,13 @@ export default function ListSelect({
           <button
             key={`ListSelect-${idx}-${keyName}`}
             className={c(
-              "py-6",
               "rounded-[5px]",
-              WIDTH_CLASSNAME[width],
-              "text-[32px]",
-              "font-medium",
+              PADDING_CLASSNAME[size],
+              WIDTH_CLASSNAME[size],
+              FONT_SIZE_CLASSNAME[size],
               value === keyName
-                ? "bg-tmoji-orange-linear"
-                : "hover:bg-tmoji-dark-grey",
+                ? "font-extrabold bg-tmoji-orange-linear"
+                : "font-medium hover:bg-tmoji-dark-grey",
             )}
             onClick={() => {
               handleClick(keyName);
@@ -63,6 +62,17 @@ export default function ListSelect({
   );
 }
 
-const WIDTH_CLASSNAME: Record<Width, string> = {
+const WIDTH_CLASSNAME: Record<Size, string> = {
+  sm: "w-[264px]",
   base: "w-[320px]",
+};
+
+const FONT_SIZE_CLASSNAME: Record<Size, string> = {
+  sm: "text-[24px]",
+  base: "text-[32px]",
+};
+
+const PADDING_CLASSNAME: Record<Size, string> = {
+  sm: "py-[16px]",
+  base: "py-6",
 };

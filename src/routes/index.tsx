@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
 import type { ChangeEvent } from "react";
@@ -49,6 +49,7 @@ function App() {
   const [translateMode, setTranslateMode] = useState<TranslateMode>("MACHINE");
 
   // Step - SELECT-LANGUAGE
+  const navigate = useNavigate();
   const [language, setLanguage] = useState<Language | null>(null);
 
   switch (step) {
@@ -181,9 +182,22 @@ function App() {
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
             />
-            <SquareIconButton>
-              <NextIcon width={40} height={40} />
-            </SquareIconButton>
+            {language ? (
+              <SquareIconButton
+                onClick={() => {
+                  navigate({
+                    to: "/step-two/bounding",
+                    search: { id: 0 },
+                  });
+                }}
+              >
+                <NextIcon width={40} height={40} />
+              </SquareIconButton>
+            ) : (
+              <SquareIconButton bg="GRAY">
+                <NextIcon width={40} height={40} />
+              </SquareIconButton>
+            )}
           </ContentWrapper>
         </div>
       );
