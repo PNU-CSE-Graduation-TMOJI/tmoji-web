@@ -73,7 +73,7 @@ function RouteComponent() {
                 "font-medium",
                 "hover:bg-tmoji-dark-grey",
               )}
-              onClick={() =>
+              onClick={() => {
                 setBoundingBoxes([
                   ...boundingBoxes,
                   {
@@ -82,8 +82,9 @@ function RouteComponent() {
                     y1: 0,
                     y2: 100,
                   },
-                ])
-              }
+                ]);
+                setSelected(boundingBoxes.length);
+              }}
             >
               +
             </button>
@@ -93,9 +94,7 @@ function RouteComponent() {
           imgSrc={sampleImageUrl}
           boundingBoxes={boundingBoxes}
           selectedIndex={selected}
-          onChange={(newBoundingBox) => {
-            const newBoundingBoxes = [...boundingBoxes];
-            newBoundingBoxes[selected] = newBoundingBox;
+          onChange={(newBoundingBoxes) => {
             setBoundingBoxes(newBoundingBoxes);
           }}
         />
@@ -118,7 +117,15 @@ function RouteComponent() {
           <SquareIconButton
             bg="GRAY"
             onClick={() => {
-              return;
+              setBoundingBoxes([
+                {
+                  x1: 0,
+                  x2: 100,
+                  y1: 0,
+                  y2: 100,
+                },
+              ]);
+              setSelected(0);
             }}
           >
             <ResetIcon width={40} height={40} />

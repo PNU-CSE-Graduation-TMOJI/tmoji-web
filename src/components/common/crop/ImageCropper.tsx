@@ -14,7 +14,8 @@ interface ImageCropperProps {
   imgSrc: string;
   boundingBoxes: Array<BoundingBox>;
   selectedIndex: number;
-  onChange: (newBoundingBox: BoundingBox) => void;
+  onChange: (newBoundingBoxes: Array<BoundingBox>) => void;
+  onOverlappingIndicesChange?: (newOverlappingIndices: Set<number>) => void;
 }
 
 function getImageSize(src: string): Promise<{ width: number; height: number }> {
@@ -35,20 +36,41 @@ function getImageSize(src: string): Promise<{ width: number; height: number }> {
   });
 }
 
+function isOverlapping(a: BoundingBox, b: BoundingBox): boolean {
+  return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
+}
+
+function getOverlappingIndices(boxes: Array<BoundingBox>): Set<number> {
+  const overlapping = new Set<number>();
+
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      if (isOverlapping(boxes[i], boxes[j])) {
+        overlapping.add(i);
+        overlapping.add(j);
+      }
+    }
+  }
+
+  return overlapping;
+}
+
 export default function ImageCropper({
   imgSrc,
   boundingBoxes,
   selectedIndex,
   onChange,
+  onOverlappingIndicesChange,
 }: ImageCropperProps) {
   // Image 가로 크기 계산
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [imgWidth, setImgWidth] = useState<number>(0);
+  const CONTAINER_HEIGHT = 440;
 
   useEffect(() => {
     const calcWidth = async () => {
       const size = await getImageSize(imgSrc);
-      setImgWidth(size.width * (440 / size.height));
+      setImgWidth(size.width * (CONTAINER_HEIGHT / size.height));
     };
 
     calcWidth();
@@ -114,7 +136,7 @@ export default function ImageCropper({
     };
   }, []);
 
-  // 바운딩 박스 로직
+  // 박스 이동 로직
   const moveRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const el = moveRef.current;
@@ -135,12 +157,24 @@ export default function ImageCropper({
     const onMouseMove = (e: MouseEvent) => {
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
-      onChange({
+
+      const newBoundingBoxes = [...boundingBoxes];
+      const newBox: BoundingBox = {
         x1: boundingArea.x1 + dx,
         x2: boundingArea.x2 + dx,
         y1: boundingArea.y1 + dy,
         y2: boundingArea.y2 + dy,
-      });
+      };
+
+      if (
+        newBox.x1 >= 0 &&
+        newBox.y1 >= 0 &&
+        newBox.x2 <= imgWidth - 20 &&
+        newBox.y2 <= CONTAINER_HEIGHT - 20
+      ) {
+        newBoundingBoxes[selectedIndex] = newBox;
+        onChange(newBoundingBoxes);
+      }
     };
 
     const onMouseUp = () => {
@@ -154,8 +188,81 @@ export default function ImageCropper({
     };
   }, [imgWidth, boundingBoxes, selectedIndex]);
 
+  // 크기 조절 로직
+  const sizeRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sizeRef.current;
+    if (!el) return;
+
+    let startX = 0;
+    let startY = 0;
+    let boundingArea: BoundingBox = { x1: 0, x2: 0, y1: 0, y2: 0 };
+
+    const onMouseDown = (e: MouseEvent) => {
+      startX = e.clientX;
+      startY = e.clientY;
+      boundingArea = { ...boundingBoxes[selectedIndex] };
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      const newBoundingBoxes = [...boundingBoxes];
+      const newBox: BoundingBox = {
+        x1: boundingArea.x1,
+        x2: boundingArea.x2 + dx,
+        y1: boundingArea.y1,
+        y2: boundingArea.y2 + dy,
+      };
+
+      if (
+        newBox.x1 + 20 <= newBox.x2 &&
+        newBox.y1 + 20 <= newBox.y2 &&
+        newBox.x2 <= imgWidth - 20 &&
+        newBox.y2 <= CONTAINER_HEIGHT - 20
+      ) {
+        newBoundingBoxes[selectedIndex] = newBox;
+        onChange(newBoundingBoxes);
+      }
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    el.addEventListener("mousedown", onMouseDown);
+    return () => {
+      el.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [imgWidth, boundingBoxes, selectedIndex]);
+
+  // 삭제 로직
+  const handleDelete = () => {
+    if (boundingBoxes.length > 1) {
+      const newBoundingBoxes = [...boundingBoxes];
+      newBoundingBoxes.splice(selectedIndex, 1);
+      onChange(newBoundingBoxes);
+    }
+  };
+
+  // 바운딩 박스 겹침 감지
+  const [overlappingIndices, setOverlappingIndices] = useState<Set<number>>(
+    new Set(),
+  );
+
+  useEffect(() => {
+    const newOverlappingIndices = getOverlappingIndices(boundingBoxes);
+    setOverlappingIndices(newOverlappingIndices);
+    onOverlappingIndicesChange &&
+      onOverlappingIndicesChange(newOverlappingIndices);
+  }, [boundingBoxes]);
+
   return (
-    <div className={c("relative", "w-[300px]", "h-[440px]", "select-none")}>
+    <div className={c("relative", "w-[440px]", "h-[440px]", "select-none")}>
       <div
         className={c("relative", "w-full", "h-full", "overflow-x-auto")}
         ref={scrollRef}
@@ -176,7 +283,9 @@ export default function ImageCropper({
                   className={c(
                     "border-[3px]",
                     selectedIndex === idx
-                      ? "border-tmoji-orange z-10"
+                      ? overlappingIndices.has(idx)
+                        ? "border-tmoji-red z-10"
+                        : "border-tmoji-orange z-10"
                       : "border-tmoji-light-grey",
                     "absolute",
                     "rounded-[5px]",
@@ -195,12 +304,13 @@ export default function ImageCropper({
                       "text-[16px]",
                       "font-black",
                     )}
-                    style={{ top: -13, left: -13 }}
+                    style={{ top: -15, left: -15 }}
                   >
                     {idx + 1}
                   </div>
                   {selectedIndex === idx ? (
                     <>
+                      {/* Move 아이콘 */}
                       <div
                         className={c("absolute")}
                         style={{
@@ -233,37 +343,60 @@ export default function ImageCropper({
                           <MoveIcon width={16} height={16} />
                         </div>
                       </div>
-                      <div
-                        className={c("absolute")}
-                        style={{
-                          left: `${box.x2 - box.x1 - 5}px`,
-                          top: `${(box.y2 - box.y1) / 2 - 1.5}px`,
-                        }}
-                      >
+                      {/* 삭제 아이콘 */}
+                      {boundingBoxes.length > 1 ? (
                         <div
-                          className={c(
-                            "w-[20px]",
-                            "h-[3px]",
-                            "bg-tmoji-orange",
-                          )}
-                        />
-                        <div
-                          className={c(
-                            "cursor-pointer",
-                            "absolute",
-                            "w-[26px]",
-                            "h-[26px]",
-                            "bg-tmoji-orange",
-                            "flex",
-                            "items-center",
-                            "justify-center",
-                            "rounded-full",
-                          )}
-                          style={{ right: -16, bottom: -11.5 }}
+                          onClick={handleDelete}
+                          className={c("absolute")}
+                          style={{
+                            left: `${box.x2 - box.x1 - 5}px`,
+                            top: `${(box.y2 - box.y1) / 2 - 1.5}px`,
+                          }}
                         >
-                          <DeleteIcon width={12} height={12} />
+                          <div
+                            className={c(
+                              "w-[20px]",
+                              "h-[3px]",
+                              "bg-tmoji-orange",
+                            )}
+                          />
+                          <div
+                            className={c(
+                              "cursor-pointer",
+                              "absolute",
+                              "w-[26px]",
+                              "h-[26px]",
+                              "bg-tmoji-orange",
+                              "flex",
+                              "items-center",
+                              "justify-center",
+                              "rounded-full",
+                            )}
+                            style={{ right: -16, bottom: -11.5 }}
+                          >
+                            <DeleteIcon width={12} height={12} />
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <></>
+                      )}
+                      {/* 크기 조절 */}
+                      <div
+                        ref={sizeRef}
+                        className={c(
+                          "cursor-se-resize",
+                          "absolute",
+                          "w-[10px]",
+                          "h-[10px]",
+                          "bg-tmoji-light-orange",
+                          "border-2",
+                          "border-tmoji-grey",
+                          "flex",
+                          "items-center",
+                          "justify-center",
+                        )}
+                        style={{ right: -6, bottom: -6 }}
+                      />
                     </>
                   ) : (
                     <></>
@@ -281,16 +414,16 @@ export default function ImageCropper({
                 draggable={false}
               />
             </div>
+            {/* ✅ Custom scrollbar */}
           </>
         ) : (
           "loading"
         )}
       </div>
-      {/* ✅ Custom scrollbar */}
       <div className="absolute bottom-1 left-0 w-full h-2 pointer-events-none">
         <div
           ref={thumbRef}
-          className="absolute h-full bg-black/40 rounded pointer-events-auto cursor-pointer transition-opacity duration-200"
+          className="absolute h-full bg-white/80 rounded pointer-events-auto cursor-pointer transition-opacity duration-200"
           style={{ width: `${thumbWidth}px`, left: `${thumbLeft}px` }}
         />
       </div>
