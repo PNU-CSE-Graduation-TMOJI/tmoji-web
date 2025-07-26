@@ -14,7 +14,7 @@ interface ImageCropperProps {
   imgSrc: string;
   boundingBoxes: Array<BoundingBox>;
   selectedIndex: number;
-  onChange: (newBoundingBoxes: Array<BoundingBox>) => void;
+  onChange?: (newBoundingBoxes: Array<BoundingBox>) => void; // 없으면 보기 모드
   onOverlappingIndicesChange?: (newOverlappingIndices: Set<number>) => void;
 }
 
@@ -173,7 +173,7 @@ export default function ImageCropper({
         newBox.y2 <= CONTAINER_HEIGHT - 20
       ) {
         newBoundingBoxes[selectedIndex] = newBox;
-        onChange(newBoundingBoxes);
+        onChange && onChange(newBoundingBoxes);
       }
     };
 
@@ -225,7 +225,7 @@ export default function ImageCropper({
         newBox.y2 <= CONTAINER_HEIGHT - 20
       ) {
         newBoundingBoxes[selectedIndex] = newBox;
-        onChange(newBoundingBoxes);
+        onChange && onChange(newBoundingBoxes);
       }
     };
 
@@ -245,7 +245,7 @@ export default function ImageCropper({
     if (boundingBoxes.length > 1) {
       const newBoundingBoxes = [...boundingBoxes];
       newBoundingBoxes.splice(selectedIndex, 1);
-      onChange(newBoundingBoxes);
+      onChange && onChange(newBoundingBoxes);
     }
   };
 
@@ -308,7 +308,7 @@ export default function ImageCropper({
                   >
                     {idx + 1}
                   </div>
-                  {selectedIndex === idx ? (
+                  {onChange && selectedIndex === idx ? (
                     <>
                       {/* Move 아이콘 */}
                       <div

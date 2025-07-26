@@ -26,6 +26,7 @@ export default function SquareIconButton({
         "flex",
         "items-center",
         "justify-center",
+        "shrink-0",
       )}
       onClick={onClick}
     >

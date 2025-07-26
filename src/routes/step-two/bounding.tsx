@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import type { BoundingBox } from "@/components/common/crop/ImageCropper";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
@@ -34,6 +34,11 @@ function RouteComponent() {
     },
   ]);
   const [selected, setSelected] = useState<number>(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log(boundingBoxes);
+  }, [boundingBoxes]);
 
   return (
     <div className={c()}>
@@ -109,7 +114,10 @@ function RouteComponent() {
         >
           <SquareIconButton
             onClick={() => {
-              return;
+              navigate({
+                to: "/step-two/detecting",
+                search: { id: 0 },
+              });
             }}
           >
             <NextIcon width={40} height={40} />

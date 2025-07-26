@@ -19,8 +19,15 @@
     background-image: linear-gradient(121deg, #fdc830 8.25%, #f37335 93.25%);
   }
   .bg-tmoji-grey-radial {
-    background-image: radial-gradient(
-      214.05% 50% at 50% 50%,
+    background: radial-gradient(
+      30% 150% at 50% 50%,
+      #292929 0%,
+      rgba(41, 41, 41, 0.5) 100%
+    );
+  }
+  .hover\:bg-tmoji-grey-radial:hover {
+    background: radial-gradient(
+      30% 150% at 50% 50%,
       #292929 0%,
       rgba(41, 41, 41, 0.5) 100%
     );
@@ -31,6 +38,8 @@ body {
   @apply m-0;
   font-family:
     "Pretendard Variable",
+    "Pretendard JP Variable",
+    "Pretendard JP",
     Pretendard,
     -apple-system,
     BlinkMacSystemFont,
