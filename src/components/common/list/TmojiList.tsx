@@ -1,28 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import c from "@/utils/c";
 
 import ZoomIcon from "@/assets/icons/zoom-mini.svg?react";
 import EditIcon from "@/assets/icons/edit-mini.svg?react";
 import DeleteIcon from "@/assets/icons/delete-mini.svg?react";
+import RefreshIcon from "@/assets/icons/refresh-mini.svg?react";
 
 interface TmojiListProps {
   texts: Array<string>;
-  selectedText: number;
-  onChange?: (newTexts: Array<string>, newSelectedText: number) => void;
+  selectedIndex: number;
+  onChange?: (newTexts: Array<string>, newSelectedIndex: number) => void;
+  onRowModeChange?: (rowMode: RowMode) => void;
+  onDelete?: (deletedIndex: number) => void;
 }
 
-type RowMode = "NORMAL" | "ZOOM" | "EDIT";
+export type RowMode = "NORMAL" | "ZOOM" | "EDIT" | "DELETE";
 
-const textReducer = (text: string): string => {
-  return text.length > 22 ? text.slice(0, 22) + "..." : text;
+const textReducer = (text: string, length = 22): string => {
+  return text.length > length ? text.slice(0, 22) + "..." : text;
 };
 
 export default function TmojiList({
   texts,
-  selectedText,
+  selectedIndex,
   onChange,
+  onRowModeChange,
+  onDelete,
 }: TmojiListProps) {
   const [rowMode, setRowMode] = useState<RowMode>("NORMAL");
+
+  // 편집 모드 로직
+  const [textEdit, setTextEdit] = useState<string | null>(null);
+
+  useEffect(() => {
+    onRowModeChange && onRowModeChange(rowMode);
+
+    if (rowMode === "EDIT") {
+      setTextEdit(texts[selectedIndex]);
+    } else {
+      setTextEdit(null);
+    }
+  }, [rowMode]);
 
   return (
     <div
@@ -36,16 +54,17 @@ export default function TmojiList({
       )}
     >
       {texts.map((t, idx) => {
+        if (rowMode !== "NORMAL" && selectedIndex !== idx) return <></>;
         return (
           <div
             key={`TmojiList-Row-${idx}`}
             className={c(
               "p-2",
               "w-full",
-              selectedText === idx
+              selectedIndex === idx
                 ? "border-[1px] border-tmoji-white"
                 : "cursor-pointer",
-              selectedText === idx
+              selectedIndex === idx
                 ? "bg-tmoji-dark-grey"
                 : "hover:bg-tmoji-grey-radial",
               "rounded-full",
@@ -59,7 +78,7 @@ export default function TmojiList({
             >
               <div
                 className={c(
-                  selectedText === idx ? "bg-tmoji-orange-linear" : "",
+                  selectedIndex === idx ? "bg-tmoji-orange-linear" : "",
                   "w-[25px]",
                   "h-[25px]",
                   "rounded-full",
@@ -72,7 +91,7 @@ export default function TmojiList({
               <span className={c("grow", "text-center", "text-xl/tight", "l")}>
                 {textReducer(t)}
               </span>
-              {selectedText === idx ? (
+              {selectedIndex === idx ? (
                 <div
                   className={c(
                     "absolute",
@@ -82,48 +101,72 @@ export default function TmojiList({
                     "gap-1",
                   )}
                 >
-                  <div
-                    className={c(
-                      "w-[25px]",
-                      "h-[25px]",
-                      "flex",
-                      "items-center",
-                      "justify-center",
-                      "bg-tmoji-grey",
-                      "rounded-full",
-                      "cursor-pointer",
-                    )}
-                  >
-                    <ZoomIcon />
-                  </div>
-                  <div
-                    className={c(
-                      "w-[25px]",
-                      "h-[25px]",
-                      "flex",
-                      "items-center",
-                      "justify-center",
-                      "bg-tmoji-grey",
-                      "rounded-full",
-                      "cursor-pointer",
-                    )}
-                  >
-                    <EditIcon />
-                  </div>
-                  <div
-                    className={c(
-                      "w-[25px]",
-                      "h-[25px]",
-                      "flex",
-                      "items-center",
-                      "justify-center",
-                      "bg-tmoji-grey",
-                      "rounded-full",
-                      "cursor-pointer",
-                    )}
-                  >
-                    <DeleteIcon />
-                  </div>
+                  {rowMode === "NORMAL" || rowMode === "ZOOM" ? (
+                    <div
+                      className={c(
+                        "w-[25px]",
+                        "h-[25px]",
+                        "flex",
+                        "items-center",
+                        "justify-center",
+                        "bg-tmoji-grey",
+                        "rounded-full",
+                        "cursor-pointer",
+                      )}
+                      onClick={() =>
+                        setRowMode(rowMode === "NORMAL" ? "ZOOM" : "NORMAL")
+                      }
+                    >
+                      <ZoomIcon />
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+
+                  {rowMode === "NORMAL" || rowMode === "EDIT" ? (
+                    <div
+                      className={c(
+                        "w-[25px]",
+                        "h-[25px]",
+                        "flex",
+                        "items-center",
+                        "justify-center",
+                        "bg-tmoji-grey",
+                        "rounded-full",
+                        "cursor-pointer",
+                      )}
+                      onClick={() =>
+                        setRowMode(rowMode === "NORMAL" ? "EDIT" : "NORMAL")
+                      }
+                    >
+                      <EditIcon />
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+
+                  {(rowMode === "NORMAL" || rowMode === "DELETE") &&
+                  texts.length > 1 ? (
+                    <div
+                      className={c(
+                        "w-[25px]",
+                        "h-[25px]",
+                        "flex",
+                        "items-center",
+                        "justify-center",
+                        "bg-tmoji-grey",
+                        "rounded-full",
+                        "cursor-pointer",
+                      )}
+                      onClick={() =>
+                        setRowMode(rowMode === "NORMAL" ? "DELETE" : "NORMAL")
+                      }
+                    >
+                      <DeleteIcon />
+                    </div>
+                  ) : (
+                    <></>
+                  )}
                 </div>
               ) : (
                 <></>
@@ -132,6 +175,174 @@ export default function TmojiList({
           </div>
         );
       })}
+
+      {rowMode !== "NORMAL" ? (
+        <div
+          className={c(
+            "grow",
+            "border-[1px]",
+            "border-tmoji-white",
+            "rounded-3xl",
+            "px-6",
+            "py-4",
+            "flex",
+            "flex-col",
+            "bg-tmoji-dark-grey",
+            "overflow-y-hidden",
+            "gap-4",
+          )}
+        >
+          {rowMode === "ZOOM" ? (
+            <>
+              <span
+                className={c(
+                  "flex",
+                  "justify-center",
+                  "w-full",
+                  "grow",
+                  "items-center",
+                  "overflow-y-hidden",
+                )}
+              >
+                {texts[selectedIndex]}
+              </span>
+            </>
+          ) : rowMode === "EDIT" ? (
+            <>
+              <label
+                className={c(
+                  "w-full",
+                  "h-full",
+                  "flex",
+                  "items-center",
+                  "justify-center",
+                )}
+              >
+                <textarea
+                  name="textEdit"
+                  className={c(
+                    "w-full",
+                    "resize-none",
+                    "border-transparent",
+                    "focus:border-transparent",
+                    "focus:ring-0",
+                    "outline-none",
+                    "text-center",
+                    "field-sizing-content",
+                    "max-h-full",
+                  )}
+                  value={textEdit ?? "error"}
+                  onChange={(e) => {
+                    setTextEdit(e.target.value);
+                  }}
+                />
+              </label>
+              <div className={c("flex", "gap-2", "w-full", "leading-5")}>
+                <button
+                  onClick={() => setTextEdit(texts[selectedIndex])}
+                  className={c(
+                    "py-2",
+                    "gap-2",
+                    "bg-tmoji-grey",
+                    "grow",
+                    "rounded-2xl",
+                    "flex",
+                    "items-center",
+                    "justify-center",
+                  )}
+                >
+                  <RefreshIcon width={13} />
+                  초기화
+                </button>
+                <button
+                  onClick={() => {
+                    const newTexts = [...texts];
+                    newTexts[selectedIndex] = textEdit ?? "error";
+                    onChange && onChange(newTexts, selectedIndex);
+                    setRowMode("NORMAL");
+                  }}
+                  className={c(
+                    "py-2",
+                    "gap-2",
+                    "bg-tmoji-orange-linear",
+                    "grow",
+                    "rounded-2xl",
+                    "flex",
+                    "items-center",
+                    "justify-center",
+                  )}
+                >
+                  <EditIcon />
+                  수정
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                className={c(
+                  "w-full",
+                  "h-full",
+                  "flex",
+                  "flex-col",
+                  "items-center",
+                  "justify-center",
+                  "gap-8",
+                )}
+              >
+                <h3 className={c("font-extrabold")}>
+                  '{textReducer(texts[selectedIndex], 35)}' 삭제
+                </h3>
+                <span className={c("text-center")}>
+                  삭제 후 다시 되돌릴 수 없습니다.
+                  <br />
+                  진행 하시겠습니까?
+                </span>
+              </div>
+              <div className={c("flex", "gap-2", "w-full", "leading-5")}>
+                <button
+                  onClick={() => setRowMode("NORMAL")}
+                  className={c(
+                    "py-2",
+                    "gap-2",
+                    "bg-tmoji-grey",
+                    "grow",
+                    "rounded-2xl",
+                    "flex",
+                    "items-center",
+                    "justify-center",
+                  )}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={() => {
+                    const newTexts = [...texts];
+                    newTexts.splice(selectedIndex, 1);
+                    onChange && onChange(newTexts, selectedIndex);
+                    onDelete && onDelete(selectedIndex);
+                    setRowMode("NORMAL");
+                  }}
+                  className={c(
+                    "py-2",
+                    "gap-2",
+                    "bg-tmoji-red",
+                    "grow",
+                    "rounded-2xl",
+                    "flex",
+                    "items-center",
+                    "justify-center",
+                  )}
+                >
+                  삭제
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <></>
+      )}
     </div>
   );
 }

@@ -34,6 +34,7 @@ export default function ListSelect({
         "rounded-[5px]",
         "border-[1px]",
         "border-white",
+        WIDTH_CLASSNAME[size],
       )}
     >
       {Object.entries(options).map((item, idx) => {
@@ -44,8 +45,8 @@ export default function ListSelect({
             className={c(
               "rounded-[5px]",
               PADDING_CLASSNAME[size],
-              WIDTH_CLASSNAME[size],
               FONT_SIZE_CLASSNAME[size],
+              "w-full",
               value === keyName
                 ? "font-extrabold bg-tmoji-orange-linear"
                 : "font-medium hover:bg-tmoji-dark-grey",
@@ -63,7 +64,7 @@ export default function ListSelect({
 }
 
 const WIDTH_CLASSNAME: Record<Size, string> = {
-  sm: "w-[264px]",
+  sm: "w-[280px]",
   base: "w-[320px]",
 };
 

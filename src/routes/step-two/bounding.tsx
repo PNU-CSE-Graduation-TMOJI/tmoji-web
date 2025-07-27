@@ -11,13 +11,13 @@ import sampleImageUrl from "@/assets/sample_image.jpg";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
 import ImageCropper from "@/components/common/crop/ImageCropper";
 
-type BoundingSearch = {
+type SearchParams = {
   id: number;
 };
 
 export const Route = createFileRoute("/step-two/bounding")({
   component: RouteComponent,
-  validateSearch: (search: Record<string, unknown>): BoundingSearch => {
+  validateSearch: (search: Record<string, unknown>): SearchParams => {
     return {
       id: Number(search.id ?? 0),
     };
@@ -67,13 +67,14 @@ function RouteComponent() {
               "rounded-[5px]",
               "border-[1px]",
               "border-white",
+              "w-[280px]",
             )}
           >
             <button
               className={c(
                 "py-[16px]",
                 "rounded-[5px]",
-                "w-[264px]",
+                "w-full",
                 "text-[24px]",
                 "font-medium",
                 "hover:bg-tmoji-dark-grey",

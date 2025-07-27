@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { BoundingBox } from "@/components/common/crop/ImageCropper";
+import type { RowMode } from "@/components/common/list/TmojiList";
 import ImageCropper from "@/components/common/crop/ImageCropper";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
@@ -9,7 +10,7 @@ import TmojiList from "@/components/common/list/TmojiList";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
 
-type DetectingSearch = {
+type SearchParams = {
   id: number;
 };
 
@@ -49,7 +50,7 @@ const SAMPLE_TEXTS: Array<string> = [
 
 export const Route = createFileRoute("/step-two/detecting")({
   component: RouteComponent,
-  validateSearch: (search: Record<string, unknown>): DetectingSearch => {
+  validateSearch: (search: Record<string, unknown>): SearchParams => {
     return {
       id: Number(search.id ?? 0),
     };
@@ -57,9 +58,12 @@ export const Route = createFileRoute("/step-two/detecting")({
 });
 
 function RouteComponent() {
-  const [boundingBoxes, _] = useState<Array<BoundingBox>>(SAMPLE_BOUNDING_BOX);
+  const [boundingBoxes, setBoundingBoxes] =
+    useState<Array<BoundingBox>>(SAMPLE_BOUNDING_BOX);
   const [texts, setTexts] = useState<Array<string>>(SAMPLE_TEXTS);
   const [selected, setSelected] = useState<number>(0);
+  const [rowMode, setRowMode] = useState<RowMode>("NORMAL");
+  const navigate = useNavigate();
 
   return (
     <div className={c()}>
@@ -84,23 +88,35 @@ function RouteComponent() {
         >
           <TmojiList
             texts={texts}
-            selectedText={selected}
+            selectedIndex={selected}
             onChange={(newTexts, newSelectedText) => {
               setTexts(newTexts);
               setSelected(newSelectedText);
             }}
-          />
-          <SquareIconButton
-            onClick={() => {
-              // navigate({
-              //   to: "/step-two/bounding",
-              //   search: { id: 0 },
-              // });
-              return;
+            onRowModeChange={(rowMode) => {
+              setRowMode(rowMode);
             }}
-          >
-            <NextIcon width={40} height={40} />
-          </SquareIconButton>
+            onDelete={(deletedIndex) => {
+              const newBoundingBoxes = [...boundingBoxes];
+              newBoundingBoxes.splice(deletedIndex, 1);
+              setBoundingBoxes(newBoundingBoxes);
+            }}
+          />
+          {rowMode === "NORMAL" ? (
+            <SquareIconButton
+              onClick={() => {
+                navigate({
+                  to: "/step-two/language",
+                  search: { id: 0 },
+                });
+                return;
+              }}
+            >
+              <NextIcon width={40} height={40} />
+            </SquareIconButton>
+          ) : (
+            <></>
+          )}
         </div>
       </ContentWrapper>
     </div>
