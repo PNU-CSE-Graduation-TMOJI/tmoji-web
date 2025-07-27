@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { BoundingBox } from "@/components/common/crop/ImageCropper";
-import type { RowMode } from "@/components/common/list/TmojiList";
+import type {
+  RowMode,
+  TranslateLanguage,
+} from "@/components/common/list/TmojiList";
 import ImageCropper from "@/components/common/crop/ImageCropper";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
@@ -41,14 +44,26 @@ const SAMPLE_BOUNDING_BOX: Array<BoundingBox> = [
   },
 ];
 
-const SAMPLE_TEXTS: Array<string> = [
+const SAMPLE_ORIGIN_TEXTS: Array<string> = [
   "中島公園駅",
   "出入口",
   "南北線",
   "Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example",
 ];
 
-export const Route = createFileRoute("/step-two/detecting")({
+const SAMPLE_TEXTS: Array<string> = [
+  "나카지마공원역",
+  "출입구",
+  "남북선",
+  "Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example",
+];
+
+const SAMPLE_TRANSLATE_LANGUAGE: TranslateLanguage = {
+  origin: "JP",
+  target: "KO",
+};
+
+export const Route = createFileRoute("/step-three/translating")({
   component: RouteComponent,
   validateSearch: (search: Record<string, unknown>): SearchParams => {
     return {
@@ -68,8 +83,8 @@ function RouteComponent() {
   return (
     <div className={c()}>
       <ContentWrapper
-        title="감지된 텍스트를 확인해 주세요."
-        subtitle="텍스트가 일치하는지 확인 후 필요 시 수정해 주세요."
+        title="번역 결과를 확인해 주세요"
+        subtitle="번역이 올바른지 확인 후 필요 시 수정해 주세요."
       >
         <ImageCropper
           imgSrc={sampleImageUrl}
@@ -87,7 +102,10 @@ function RouteComponent() {
           )}
         >
           <TmojiList
+            type="TRANSLATE"
             texts={texts}
+            originTexts={SAMPLE_ORIGIN_TEXTS}
+            translateLanguage={SAMPLE_TRANSLATE_LANGUAGE}
             selectedIndex={selected}
             onChange={(newTexts, newSelectedText) => {
               setTexts(newTexts);
@@ -106,7 +124,7 @@ function RouteComponent() {
             <SquareIconButton
               onClick={() => {
                 navigate({
-                  to: "/step-two/language",
+                  to: "/result",
                   search: { id: 0 },
                 });
                 return;

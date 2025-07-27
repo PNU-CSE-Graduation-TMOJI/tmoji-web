@@ -81,7 +81,7 @@ function RouteComponent() {
           <SquareIconButton
             onClick={() => {
               navigate({
-                to: "/step-two/bounding",
+                to: "/step-three/translating",
                 search: { id: 0 },
               });
             }}

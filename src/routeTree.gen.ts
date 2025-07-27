@@ -9,11 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
+import { Route as ResultRouteImport } from "./routes/result";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as StepTwoLanguageRouteImport } from "./routes/step-two/language";
 import { Route as StepTwoDetectingRouteImport } from "./routes/step-two/detecting";
 import { Route as StepTwoBoundingRouteImport } from "./routes/step-two/bounding";
+import { Route as StepThreeTranslatingRouteImport } from "./routes/step-three/translating";
 
+const ResultRoute = ResultRouteImport.update({
+  id: "/result",
+  path: "/result",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
@@ -34,15 +41,24 @@ const StepTwoBoundingRoute = StepTwoBoundingRouteImport.update({
   path: "/step-two/bounding",
   getParentRoute: () => rootRouteImport,
 } as any);
+const StepThreeTranslatingRoute = StepThreeTranslatingRouteImport.update({
+  id: "/step-three/translating",
+  path: "/step-three/translating",
+  getParentRoute: () => rootRouteImport,
+} as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/result": typeof ResultRoute;
+  "/step-three/translating": typeof StepThreeTranslatingRoute;
   "/step-two/bounding": typeof StepTwoBoundingRoute;
   "/step-two/detecting": typeof StepTwoDetectingRoute;
   "/step-two/language": typeof StepTwoLanguageRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/result": typeof ResultRoute;
+  "/step-three/translating": typeof StepThreeTranslatingRoute;
   "/step-two/bounding": typeof StepTwoBoundingRoute;
   "/step-two/detecting": typeof StepTwoDetectingRoute;
   "/step-two/language": typeof StepTwoLanguageRoute;
@@ -50,6 +66,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/result": typeof ResultRoute;
+  "/step-three/translating": typeof StepThreeTranslatingRoute;
   "/step-two/bounding": typeof StepTwoBoundingRoute;
   "/step-two/detecting": typeof StepTwoDetectingRoute;
   "/step-two/language": typeof StepTwoLanguageRoute;
@@ -58,14 +76,24 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | "/"
+    | "/result"
+    | "/step-three/translating"
     | "/step-two/bounding"
     | "/step-two/detecting"
     | "/step-two/language";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/step-two/bounding" | "/step-two/detecting" | "/step-two/language";
+  to:
+    | "/"
+    | "/result"
+    | "/step-three/translating"
+    | "/step-two/bounding"
+    | "/step-two/detecting"
+    | "/step-two/language";
   id:
     | "__root__"
     | "/"
+    | "/result"
+    | "/step-three/translating"
     | "/step-two/bounding"
     | "/step-two/detecting"
     | "/step-two/language";
@@ -73,6 +101,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  ResultRoute: typeof ResultRoute;
+  StepThreeTranslatingRoute: typeof StepThreeTranslatingRoute;
   StepTwoBoundingRoute: typeof StepTwoBoundingRoute;
   StepTwoDetectingRoute: typeof StepTwoDetectingRoute;
   StepTwoLanguageRoute: typeof StepTwoLanguageRoute;
@@ -80,6 +110,13 @@ export interface RootRouteChildren {
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
+    "/result": {
+      id: "/result";
+      path: "/result";
+      fullPath: "/result";
+      preLoaderRoute: typeof ResultRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/": {
       id: "/";
       path: "/";
@@ -108,11 +145,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof StepTwoBoundingRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/step-three/translating": {
+      id: "/step-three/translating";
+      path: "/step-three/translating";
+      fullPath: "/step-three/translating";
+      preLoaderRoute: typeof StepThreeTranslatingRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ResultRoute: ResultRoute,
+  StepThreeTranslatingRoute: StepThreeTranslatingRoute,
   StepTwoBoundingRoute: StepTwoBoundingRoute,
   StepTwoDetectingRoute: StepTwoDetectingRoute,
   StepTwoLanguageRoute: StepTwoLanguageRoute,

@@ -7,7 +7,10 @@ import DeleteIcon from "@/assets/icons/delete-mini.svg?react";
 import RefreshIcon from "@/assets/icons/refresh-mini.svg?react";
 
 interface TmojiListProps {
+  type?: Type;
   texts: Array<string>;
+  originTexts?: Array<string>;
+  translateLanguage?: TranslateLanguage;
   selectedIndex: number;
   onChange?: (newTexts: Array<string>, newSelectedIndex: number) => void;
   onRowModeChange?: (rowMode: RowMode) => void;
@@ -15,13 +18,28 @@ interface TmojiListProps {
 }
 
 export type RowMode = "NORMAL" | "ZOOM" | "EDIT" | "DELETE";
+type Type = "DETECT" | "TRANSLATE";
+type Language = "KO" | "EN" | "JP";
+export interface TranslateLanguage {
+  origin: Language;
+  target: Language;
+}
+
+const languageOptions: Record<Language, string> = {
+  KO: "한국어",
+  EN: "English",
+  JP: "日本語",
+};
 
 const textReducer = (text: string, length = 22): string => {
   return text.length > length ? text.slice(0, 22) + "..." : text;
 };
 
 export default function TmojiList({
+  type = "DETECT",
   texts,
+  originTexts,
+  translateLanguage,
   selectedIndex,
   onChange,
   onRowModeChange,
@@ -41,6 +59,12 @@ export default function TmojiList({
       setTextEdit(null);
     }
   }, [rowMode]);
+
+  if (type === "TRANSLATE" && !originTexts)
+    return <>error: TRANSLATE type shoud have originTexts</>;
+
+  if (type === "TRANSLATE" && !translateLanguage)
+    return <>error: TRANSLATE type shoud have translateLanguage</>;
 
   return (
     <div
@@ -176,9 +200,14 @@ export default function TmojiList({
         );
       })}
 
-      {rowMode !== "NORMAL" ? (
+      {type === "TRANSLATE" &&
+      originTexts &&
+      translateLanguage &&
+      rowMode !== "NORMAL" &&
+      rowMode !== "DELETE" ? (
         <div
           className={c(
+            "relative",
             "grow",
             "border-[1px]",
             "border-tmoji-white",
@@ -192,6 +221,80 @@ export default function TmojiList({
             "gap-4",
           )}
         >
+          <div
+            className={c(
+              "text-xs",
+              "font-light",
+              "px-4",
+              "py-1",
+              "flex",
+              "justify-center",
+              "items-center",
+              "absolute",
+              "right-3",
+              "top-3",
+              "rounded-full",
+              "bg-tmoji-grey",
+            )}
+          >
+            {languageOptions[translateLanguage.origin]}
+          </div>
+          <span
+            className={c(
+              "flex",
+              "justify-center",
+              "w-full",
+              "grow",
+              "items-center",
+              "overflow-y-hidden",
+            )}
+          >
+            {originTexts[selectedIndex]}
+          </span>
+        </div>
+      ) : (
+        <></>
+      )}
+
+      {rowMode !== "NORMAL" ? (
+        <div
+          className={c(
+            "relative",
+            "grow",
+            "border-[1px]",
+            "border-tmoji-white",
+            "rounded-3xl",
+            "px-6",
+            "py-4",
+            "flex",
+            "flex-col",
+            "bg-tmoji-dark-grey",
+            "overflow-y-hidden",
+            "gap-4",
+          )}
+        >
+          {type === "TRANSLATE" && translateLanguage ? (
+            <div
+              className={c(
+                "text-xs",
+                "font-light",
+                "px-4",
+                "py-1",
+                "flex",
+                "justify-center",
+                "items-center",
+                "absolute",
+                "right-3",
+                "top-3",
+                "rounded-full",
+                "bg-tmoji-grey",
+              )}
+            >
+              {languageOptions[translateLanguage.target]}
+            </div>
+          ) : (
+            <></>
+          )}
           {rowMode === "ZOOM" ? (
             <>
               <span
