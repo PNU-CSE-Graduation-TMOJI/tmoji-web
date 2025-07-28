@@ -12,7 +12,7 @@ export const Route = createFileRoute("/result")({
 
 function App() {
   // Step - SELECT-SERVICE
-  const [translateMode, setTranslateMode] = useState<TranslateMode>("AI");
+  const [translateMode, _] = useState<TranslateMode>("AI");
 
   return (
     <div className={c()}>

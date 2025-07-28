@@ -46,7 +46,7 @@ function App() {
   };
 
   // Step - SELECT-SERVICE
-  const [translateMode, setTranslateMode] = useState<TranslateMode>("MACHINE");
+  const [_, setTranslateMode] = useState<TranslateMode>("MACHINE");
 
   // Step - SELECT-LANGUAGE
   const navigate = useNavigate();
