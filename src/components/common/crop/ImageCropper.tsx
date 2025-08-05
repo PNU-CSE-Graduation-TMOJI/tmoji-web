@@ -65,12 +65,15 @@ export default function ImageCropper({
   // Image 가로 크기 계산
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [imgWidth, setImgWidth] = useState<number>(0);
+  const [ratio, setRatio] = useState<number>(1);
   const CONTAINER_HEIGHT = 440;
 
   useEffect(() => {
     const calcWidth = async () => {
       const size = await getImageSize(imgSrc);
-      setImgWidth(size.width * (CONTAINER_HEIGHT / size.height));
+      const newRatio = CONTAINER_HEIGHT / size.height;
+      setImgWidth(size.width * newRatio);
+      setRatio(newRatio);
     };
 
     calcWidth();
@@ -155,8 +158,8 @@ export default function ImageCropper({
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
+      const dx = (e.clientX - startX) / ratio;
+      const dy = (e.clientY - startY) / ratio;
 
       const newBoundingBoxes = [...boundingBoxes];
       const newBox: BoundingBox = {
@@ -169,8 +172,8 @@ export default function ImageCropper({
       if (
         newBox.x1 >= 0 &&
         newBox.y1 >= 0 &&
-        newBox.x2 <= imgWidth - 20 &&
-        newBox.y2 <= CONTAINER_HEIGHT - 20
+        newBox.x2 <= imgWidth / ratio - 60 &&
+        newBox.y2 <= CONTAINER_HEIGHT / ratio - 60
       ) {
         newBoundingBoxes[selectedIndex] = newBox;
         onChange && onChange(newBoundingBoxes);
@@ -207,8 +210,8 @@ export default function ImageCropper({
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
+      const dx = (e.clientX - startX) / ratio;
+      const dy = (e.clientY - startY) / ratio;
 
       const newBoundingBoxes = [...boundingBoxes];
       const newBox: BoundingBox = {
@@ -221,8 +224,8 @@ export default function ImageCropper({
       if (
         newBox.x1 + 20 <= newBox.x2 &&
         newBox.y1 + 20 <= newBox.y2 &&
-        newBox.x2 <= imgWidth - 20 &&
-        newBox.y2 <= CONTAINER_HEIGHT - 20
+        newBox.x2 <= imgWidth / ratio - 60 &&
+        newBox.y2 <= CONTAINER_HEIGHT / ratio - 60
       ) {
         newBoundingBoxes[selectedIndex] = newBox;
         onChange && onChange(newBoundingBoxes);
@@ -275,10 +278,10 @@ export default function ImageCropper({
                 <div
                   key={`boundingBox-${idx}`}
                   style={{
-                    left: box.x1,
-                    top: box.y1,
-                    width: `${box.x2 - box.x1}px`,
-                    height: `${box.y2 - box.y1}px`,
+                    left: box.x1 * ratio,
+                    top: box.y1 * ratio,
+                    width: `${(box.x2 - box.x1) * ratio}px`,
+                    height: `${(box.y2 - box.y1) * ratio}px`,
                   }}
                   className={c(
                     "border-[3px]",
@@ -314,8 +317,8 @@ export default function ImageCropper({
                       <div
                         className={c("absolute")}
                         style={{
-                          left: `${(box.x2 - box.x1) / 2 - 1.5}px`,
-                          top: `${box.y2 - box.y1 - 5}px`,
+                          left: `${((box.x2 - box.x1) * ratio) / 2 - 1.5}px`,
+                          top: `${(box.y2 - box.y1) * ratio - 5}px`,
                         }}
                       >
                         <div
@@ -349,8 +352,8 @@ export default function ImageCropper({
                           onClick={handleDelete}
                           className={c("absolute")}
                           style={{
-                            left: `${box.x2 - box.x1 - 5}px`,
-                            top: `${(box.y2 - box.y1) / 2 - 1.5}px`,
+                            left: `${(box.x2 - box.x1) * ratio - 5}px`,
+                            top: `${((box.y2 - box.y1) * ratio) / 2 - 1.5}px`,
                           }}
                         >
                           <div
