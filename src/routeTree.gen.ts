@@ -8,150 +8,150 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as ResultRouteImport } from "./routes/result";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as StepTwoLanguageRouteImport } from "./routes/step-two/language";
-import { Route as StepTwoDetectingRouteImport } from "./routes/step-two/detecting";
-import { Route as StepTwoBoundingRouteImport } from "./routes/step-two/bounding";
-import { Route as StepThreeTranslatingRouteImport } from "./routes/step-three/translating";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResultRouteImport } from './routes/result'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as StepTwoLanguageRouteImport } from './routes/step-two/language'
+import { Route as StepTwoDetectingRouteImport } from './routes/step-two/detecting'
+import { Route as StepTwoBoundingRouteImport } from './routes/step-two/bounding'
+import { Route as StepThreeTranslatingRouteImport } from './routes/step-three/translating'
 
 const ResultRoute = ResultRouteImport.update({
-  id: "/result",
-  path: "/result",
+  id: '/result',
+  path: '/result',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const StepTwoLanguageRoute = StepTwoLanguageRouteImport.update({
-  id: "/step-two/language",
-  path: "/step-two/language",
+  id: '/step-two/language',
+  path: '/step-two/language',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const StepTwoDetectingRoute = StepTwoDetectingRouteImport.update({
-  id: "/step-two/detecting",
-  path: "/step-two/detecting",
+  id: '/step-two/detecting',
+  path: '/step-two/detecting',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const StepTwoBoundingRoute = StepTwoBoundingRouteImport.update({
-  id: "/step-two/bounding",
-  path: "/step-two/bounding",
+  id: '/step-two/bounding',
+  path: '/step-two/bounding',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const StepThreeTranslatingRoute = StepThreeTranslatingRouteImport.update({
-  id: "/step-three/translating",
-  path: "/step-three/translating",
+  id: '/step-three/translating',
+  path: '/step-three/translating',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/result": typeof ResultRoute;
-  "/step-three/translating": typeof StepThreeTranslatingRoute;
-  "/step-two/bounding": typeof StepTwoBoundingRoute;
-  "/step-two/detecting": typeof StepTwoDetectingRoute;
-  "/step-two/language": typeof StepTwoLanguageRoute;
+  '/': typeof IndexRoute
+  '/result': typeof ResultRoute
+  '/step-three/translating': typeof StepThreeTranslatingRoute
+  '/step-two/bounding': typeof StepTwoBoundingRoute
+  '/step-two/detecting': typeof StepTwoDetectingRoute
+  '/step-two/language': typeof StepTwoLanguageRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/result": typeof ResultRoute;
-  "/step-three/translating": typeof StepThreeTranslatingRoute;
-  "/step-two/bounding": typeof StepTwoBoundingRoute;
-  "/step-two/detecting": typeof StepTwoDetectingRoute;
-  "/step-two/language": typeof StepTwoLanguageRoute;
+  '/': typeof IndexRoute
+  '/result': typeof ResultRoute
+  '/step-three/translating': typeof StepThreeTranslatingRoute
+  '/step-two/bounding': typeof StepTwoBoundingRoute
+  '/step-two/detecting': typeof StepTwoDetectingRoute
+  '/step-two/language': typeof StepTwoLanguageRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/result": typeof ResultRoute;
-  "/step-three/translating": typeof StepThreeTranslatingRoute;
-  "/step-two/bounding": typeof StepTwoBoundingRoute;
-  "/step-two/detecting": typeof StepTwoDetectingRoute;
-  "/step-two/language": typeof StepTwoLanguageRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/result': typeof ResultRoute
+  '/step-three/translating': typeof StepThreeTranslatingRoute
+  '/step-two/bounding': typeof StepTwoBoundingRoute
+  '/step-two/detecting': typeof StepTwoDetectingRoute
+  '/step-two/language': typeof StepTwoLanguageRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/result"
-    | "/step-three/translating"
-    | "/step-two/bounding"
-    | "/step-two/detecting"
-    | "/step-two/language";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/result'
+    | '/step-three/translating'
+    | '/step-two/bounding'
+    | '/step-two/detecting'
+    | '/step-two/language'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/result"
-    | "/step-three/translating"
-    | "/step-two/bounding"
-    | "/step-two/detecting"
-    | "/step-two/language";
+    | '/'
+    | '/result'
+    | '/step-three/translating'
+    | '/step-two/bounding'
+    | '/step-two/detecting'
+    | '/step-two/language'
   id:
-    | "__root__"
-    | "/"
-    | "/result"
-    | "/step-three/translating"
-    | "/step-two/bounding"
-    | "/step-two/detecting"
-    | "/step-two/language";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/result'
+    | '/step-three/translating'
+    | '/step-two/bounding'
+    | '/step-two/detecting'
+    | '/step-two/language'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  ResultRoute: typeof ResultRoute;
-  StepThreeTranslatingRoute: typeof StepThreeTranslatingRoute;
-  StepTwoBoundingRoute: typeof StepTwoBoundingRoute;
-  StepTwoDetectingRoute: typeof StepTwoDetectingRoute;
-  StepTwoLanguageRoute: typeof StepTwoLanguageRoute;
+  IndexRoute: typeof IndexRoute
+  ResultRoute: typeof ResultRoute
+  StepThreeTranslatingRoute: typeof StepThreeTranslatingRoute
+  StepTwoBoundingRoute: typeof StepTwoBoundingRoute
+  StepTwoDetectingRoute: typeof StepTwoDetectingRoute
+  StepTwoLanguageRoute: typeof StepTwoLanguageRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/result": {
-      id: "/result";
-      path: "/result";
-      fullPath: "/result";
-      preLoaderRoute: typeof ResultRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/step-two/language": {
-      id: "/step-two/language";
-      path: "/step-two/language";
-      fullPath: "/step-two/language";
-      preLoaderRoute: typeof StepTwoLanguageRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/step-two/detecting": {
-      id: "/step-two/detecting";
-      path: "/step-two/detecting";
-      fullPath: "/step-two/detecting";
-      preLoaderRoute: typeof StepTwoDetectingRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/step-two/bounding": {
-      id: "/step-two/bounding";
-      path: "/step-two/bounding";
-      fullPath: "/step-two/bounding";
-      preLoaderRoute: typeof StepTwoBoundingRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/step-three/translating": {
-      id: "/step-three/translating";
-      path: "/step-three/translating";
-      fullPath: "/step-three/translating";
-      preLoaderRoute: typeof StepThreeTranslatingRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/result': {
+      id: '/result'
+      path: '/result'
+      fullPath: '/result'
+      preLoaderRoute: typeof ResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/step-two/language': {
+      id: '/step-two/language'
+      path: '/step-two/language'
+      fullPath: '/step-two/language'
+      preLoaderRoute: typeof StepTwoLanguageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/step-two/detecting': {
+      id: '/step-two/detecting'
+      path: '/step-two/detecting'
+      fullPath: '/step-two/detecting'
+      preLoaderRoute: typeof StepTwoDetectingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/step-two/bounding': {
+      id: '/step-two/bounding'
+      path: '/step-two/bounding'
+      fullPath: '/step-two/bounding'
+      preLoaderRoute: typeof StepTwoBoundingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/step-three/translating': {
+      id: '/step-three/translating'
+      path: '/step-three/translating'
+      fullPath: '/step-three/translating'
+      preLoaderRoute: typeof StepThreeTranslatingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,7 +162,7 @@ const rootRouteChildren: RootRouteChildren = {
   StepTwoBoundingRoute: StepTwoBoundingRoute,
   StepTwoDetectingRoute: StepTwoDetectingRoute,
   StepTwoLanguageRoute: StepTwoLanguageRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
