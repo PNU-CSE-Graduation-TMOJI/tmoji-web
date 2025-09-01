@@ -1,52 +1,23 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import type { BoundingBox } from "@/components/common/crop/ImageCropper";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ClipLoader } from "react-spinners";
 import type { RowMode } from "@/components/common/list/TmojiList";
+import type { Area } from "@/api/schema/common";
+import type { Service } from "@/api/schema/service";
 import ImageCropper from "@/components/common/crop/ImageCropper";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
-import sampleImageUrl from "@/assets/sample_image.jpg";
 import TmojiList from "@/components/common/list/TmojiList";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
+import step2Api from "@/api/handler/step-2";
+import serviceApi from "@/api/handler/service";
+import { IMAGE_URL_BASE } from "@/constansts";
 
 type SearchParams = {
   id: number;
 };
-
-const SAMPLE_BOUNDING_BOX: Array<BoundingBox> = [
-  {
-    x1: 119,
-    x2: 755,
-    y1: 732,
-    y2: 874,
-  },
-  {
-    x1: 137,
-    x2: 270,
-    y1: 669,
-    y2: 731,
-  },
-  {
-    x1: 272,
-    x2: 405,
-    y1: 678,
-    y2: 731,
-  },
-  {
-    x1: 41,
-    x2: 259,
-    y1: 340,
-    y2: 380,
-  },
-];
-
-const SAMPLE_TEXTS: Array<string> = [
-  "中島公園駅",
-  "出入口",
-  "南北線",
-  "Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example",
-];
 
 export const Route = createFileRoute("/step-two/detecting")({
   component: RouteComponent,
@@ -58,12 +29,112 @@ export const Route = createFileRoute("/step-two/detecting")({
 });
 
 function RouteComponent() {
-  const [boundingBoxes, setBoundingBoxes] =
-    useState<Array<BoundingBox>>(SAMPLE_BOUNDING_BOX);
-  const [texts, setTexts] = useState<Array<string>>(SAMPLE_TEXTS);
+  const { id } = Route.useSearch();
+  const queryClient = useQueryClient();
+
+  // API
+  const { data: statusData } = useQuery({
+    queryKey: [...step2Api.KEYS.getServiceStatus(), id],
+    queryFn: () => step2Api.getServiceStatus(id),
+    refetchOnWindowFocus: false,
+    refetchInterval: (query) => {
+      const needRefetch =
+        query.state.data && query.state.data.isCompleted ? false : 3000;
+      return needRefetch;
+    },
+  });
+
+  const { mutate: mutatePatchText } = useMutation({
+    mutationKey: [...step2Api.KEYS.patchAreaText(), id],
+    mutationFn: (variables: {
+      serviceId: number;
+      areaId: number;
+      newText: string;
+    }) =>
+      step2Api.patchAreaText(variables.serviceId, variables.areaId, {
+        newOriginText: variables.newText,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step2Api.KEYS.getServiceStatus(), id],
+      });
+    },
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step2Api.KEYS.getServiceStatus(), id],
+      });
+    },
+  });
+
+  const { mutate: mutateDeleteText } = useMutation({
+    mutationKey: [...step2Api.KEYS.deleteAreaText(), id],
+    mutationFn: (variables: { serviceId: number; areaId: number }) =>
+      step2Api.deleteAreaText(variables.serviceId, variables.areaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step2Api.KEYS.getServiceStatus(), id],
+      });
+    },
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step2Api.KEYS.getServiceStatus(), id],
+      });
+    },
+  });
+
+  // State
+  const [serviceData, setServiceData] = useState<Service>();
+  const [boundingBoxes, setBoundingBoxes] = useState<Array<Area>>();
+  const [texts, setTexts] = useState<Array<string>>();
   const [selected, setSelected] = useState<number>(0);
   const [rowMode, setRowMode] = useState<RowMode>("NORMAL");
   const navigate = useNavigate();
+
+  // useEffect
+  useEffect(() => {
+    const getServiceData = async () => {
+      const data = await queryClient.fetchQuery({
+        queryKey: [...serviceApi.KEYS.getService(), id],
+        queryFn: () => serviceApi.getService(id),
+      });
+      setServiceData(data);
+    };
+
+    if (statusData && statusData.isCompleted) {
+      if (!statusData.areas) {
+        alert("OCR 결과값을 가져오는데 실패하였습니다.");
+        navigate({ to: "/" });
+        return;
+      }
+
+      getServiceData();
+      setBoundingBoxes(
+        statusData.areas.map((area) => ({
+          x1: area.x1,
+          x2: area.x2,
+          y1: area.y1,
+          y2: area.y2,
+        })),
+      );
+      setTexts(statusData.areas.map((area) => area.originText));
+    }
+  }, [statusData]);
+
+  useEffect(() => {
+    console.log(serviceData);
+  }, [serviceData]);
+
+  if (!statusData || !serviceData || !boundingBoxes || !texts)
+    return (
+      <div>
+        <ContentWrapper
+          title="OCR 과정이 진행되고 있습니다."
+          subtitle="잠시 기다려 주십시오."
+        >
+          <ClipLoader color={"#575757"} size={100} />
+        </ContentWrapper>
+      </div>
+    );
 
   return (
     <div className={c()}>
@@ -72,7 +143,7 @@ function RouteComponent() {
         subtitle="텍스트가 일치하는지 확인 후 필요 시 수정해 주세요."
       >
         <ImageCropper
-          imgSrc={sampleImageUrl}
+          imgSrc={`${IMAGE_URL_BASE}/${serviceData.originImage.filename}`}
           boundingBoxes={boundingBoxes}
           selectedIndex={selected}
         />
@@ -90,16 +161,35 @@ function RouteComponent() {
             texts={texts}
             selectedIndex={selected}
             onChange={(newTexts, newSelectedText) => {
+              if (texts.length === newTexts.length) {
+                newTexts.forEach((newText, idx) => {
+                  if (
+                    statusData.areas &&
+                    statusData.areas[idx].originText !== newText
+                  )
+                    mutatePatchText({
+                      serviceId: id,
+                      areaId: statusData.areas[idx].id,
+                      newText,
+                    });
+                });
+              }
               setTexts(newTexts);
               setSelected(newSelectedText);
             }}
-            onRowModeChange={(rowMode) => {
-              setRowMode(rowMode);
+            onRowModeChange={(newRowMode) => {
+              setRowMode(newRowMode);
             }}
             onDelete={(deletedIndex) => {
-              const newBoundingBoxes = [...boundingBoxes];
-              newBoundingBoxes.splice(deletedIndex, 1);
-              setBoundingBoxes(newBoundingBoxes);
+              if (statusData.areas) {
+                mutateDeleteText({
+                  serviceId: id,
+                  areaId: statusData.areas[deletedIndex].id,
+                });
+                const newBoundingBoxes = [...boundingBoxes];
+                newBoundingBoxes.splice(deletedIndex, 1);
+                setBoundingBoxes(newBoundingBoxes);
+              }
             }}
           />
           {rowMode === "NORMAL" ? (

@@ -21,3 +21,19 @@ export const ServiceStepSchema = z.enum([
   "COMPOSING",
 ]);
 export type ServiceStep = z.infer<typeof ServiceStepSchema>;
+
+export const AreaSchema = z.object({
+  x1: z.number(),
+  x2: z.number(),
+  y1: z.number(),
+  y2: z.number(),
+});
+export type Area = z.infer<typeof AreaSchema>;
+
+export const AreaDetailSchema = AreaSchema.extend({
+  id: z.number(),
+  createdAt: z.string(),
+  serviceId: z.number(),
+  originText: z.string(),
+});
+export type AreaDetail = z.infer<typeof AreaDetailSchema>;
