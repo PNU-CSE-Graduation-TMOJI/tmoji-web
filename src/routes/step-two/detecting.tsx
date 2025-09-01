@@ -197,7 +197,7 @@ function RouteComponent() {
               onClick={() => {
                 navigate({
                   to: "/step-two/language",
-                  search: { id: 0 },
+                  search: { id },
                 });
                 return;
               }}
