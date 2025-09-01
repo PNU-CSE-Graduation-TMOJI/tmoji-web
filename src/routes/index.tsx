@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
+import { useMutation } from "@tanstack/react-query";
 import type { ChangeEvent } from "react";
+import type { PostServiceReq } from "@/api/schema/step1";
+import type { Language } from "@/api/schema/common";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
@@ -10,10 +13,11 @@ import PlusIcon from "@/assets/icons/plus.svg?react";
 import ResetIcon from "@/assets/icons/refresh.svg?react";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
 import ListSelect from "@/components/common/select/ListSelect";
+import imageApi from "@/api/handler/image";
+import { IMAGE_URL_BASE } from "@/constansts";
+import step1Api from "@/api/handler/step-1";
 
 type Step = "IMAGE-UPLOAD" | "SELECT-SERVICE" | "SELECT-LANGUAGE";
-type TranslateMode = "MACHINE" | "AI";
-type Language = "KO" | "EN" | "JP";
 
 const languageOptions: Record<Language, string> = {
   KO: "한국어",
@@ -25,32 +29,59 @@ export const Route = createFileRoute("/")({
   component: App,
 });
 
+const SERVICE_INIT: PostServiceReq = {
+  filename: "",
+  originLanguage: "EN",
+  serviceMode: "AI",
+};
+
 function App() {
+  const navigate = useNavigate();
+
+  const [service, setService] = useState<PostServiceReq>(SERVICE_INIT);
   const [step, setStep] = useState<Step>("IMAGE-UPLOAD");
 
-  // Step - IMAGE-UPLOAD
-  const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // API
+  const { mutate: imageMutate, isPending: isImagePending } = useMutation({
+    mutationKey: imageApi.KEYS.post(),
+    mutationFn: (formData: FormData) => imageApi.postImage(formData),
+    onSuccess: (data) => {
+      setService((prev) => ({ ...prev, filename: data.filename }));
+    },
+    onError: () => {
+      setService(SERVICE_INIT);
+    },
+  });
 
+  const { mutate: serviceMutate } = useMutation({
+    mutationKey: step1Api.KEYS.postService(),
+    mutationFn: (request: PostServiceReq) => step1Api.postService(request),
+    onSuccess: (data) => {
+      navigate({
+        to: "/step-two/bounding",
+        search: { id: data.id },
+      });
+    },
+    onError: () => {
+      setService(SERVICE_INIT);
+      setStep("IMAGE-UPLOAD");
+    },
+  });
+
+  // Step - IMAGE-UPLOAD
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setSelectedFile(file);
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append("file", file);
+    imageMutate(formData);
   };
 
-  // Step - SELECT-SERVICE
-  const [_, setTranslateMode] = useState<TranslateMode>("MACHINE");
-
   // Step - SELECT-LANGUAGE
-  const navigate = useNavigate();
-  const [language, setLanguage] = useState<Language | null>(null);
+  const submitHandler = () => {
+    serviceMutate(service);
+  };
 
   switch (step) {
     case "IMAGE-UPLOAD":
@@ -60,7 +91,11 @@ function App() {
             title="사진을 업로드해주세요"
             subtitle="사진을 업로드하면 번역 과정이 시작됩니다."
           >
-            {!preview && !selectedFile ? (
+            {isImagePending ? (
+              <>
+                <ClipLoader color={"#575757"} size={100} />
+              </>
+            ) : !service.filename ? (
               <>
                 <label
                   className={c(
@@ -86,20 +121,19 @@ function App() {
                   </SquareIconButton>
                 </label>
               </>
-            ) : preview && selectedFile ? (
+            ) : (
               <>
                 <SquareIconButton
                   bg="GRAY"
                   onClick={() => {
-                    setSelectedFile(null);
-                    setPreview(null);
+                    setService(SERVICE_INIT);
                   }}
                 >
                   <ResetIcon width={40} height={40} />
                 </SquareIconButton>
                 <div className={c("max-w-[440px]", "overflow-x-auto")}>
                   <img
-                    src={preview}
+                    src={`${IMAGE_URL_BASE}/${service.filename}`}
                     className={c(
                       "h-[440px]",
                       "object-contain",
@@ -115,8 +149,6 @@ function App() {
                   <NextIcon width={40} height={40} />
                 </SquareIconButton>
               </>
-            ) : (
-              <ClipLoader color={"#575757"} size={100} />
             )}
           </ContentWrapper>
         </div>
@@ -142,7 +174,7 @@ function App() {
                   "text-[64px]",
                 )}
                 onClick={() => {
-                  setTranslateMode("MACHINE");
+                  setService((prev) => ({ ...prev, serviceMode: "MACHINE" }));
                   setStep("SELECT-LANGUAGE");
                 }}
               >
@@ -159,7 +191,7 @@ function App() {
                   "text-[64px]",
                 )}
                 onClick={() => {
-                  setTranslateMode("AI");
+                  setService((prev) => ({ ...prev, serviceMode: "AI" }));
                   setStep("SELECT-LANGUAGE");
                 }}
               >
@@ -179,25 +211,17 @@ function App() {
             <div className={c("w-[100px]")} />
             <ListSelect
               options={languageOptions}
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as Language)}
+              value={service.originLanguage}
+              onChange={(e) =>
+                setService((prev) => ({
+                  ...prev,
+                  originLanguage: e.target.value as Language,
+                }))
+              }
             />
-            {language ? (
-              <SquareIconButton
-                onClick={() => {
-                  navigate({
-                    to: "/step-two/bounding",
-                    search: { id: 0 },
-                  });
-                }}
-              >
-                <NextIcon width={40} height={40} />
-              </SquareIconButton>
-            ) : (
-              <SquareIconButton bg="GRAY">
-                <NextIcon width={40} height={40} />
-              </SquareIconButton>
-            )}
+            <SquareIconButton onClick={submitHandler}>
+              <NextIcon width={40} height={40} />
+            </SquareIconButton>
           </ContentWrapper>
         </div>
       );

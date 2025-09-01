@@ -1,19 +1,18 @@
-import { useApi } from ".";
+import { ApiClient } from "@/api/core";
 
 const BASE_URL: string = import.meta.env.VITE_API_URL;
 
-const { api, loading, error, abortAll } = useApi({
+const client = new ApiClient({
   baseURL: BASE_URL,
-  // getToken: () => localStorage.getItem("access_token"),
-  // refresh: async () => {
-  //   // 예시: 리프레시 토큰으로 새 액세스 토큰 발급 후 반환
-  //   const res = await fetch("/auth/refresh", { method: "POST", credentials: "include" });
-  //   if (!res.ok) return null;
-  //   const { accessToken } = await res.json();
-  //   localStorage.setItem("access_token", accessToken);
-  //   return accessToken;
-  // },
-  timeoutMs: 10000,
+  getToken: () => localStorage.getItem("access_token"),
+  refresh: async () => {
+    // refresh 요청 → 새 토큰 저장
+    const res = await fetch("/refresh");
+    const { token } = await res.json();
+    localStorage.setItem("access_token", token);
+    return token;
+  },
+  onError: (err) => console.error("API Error:", err),
 });
 
-export default api;
+export default client;
