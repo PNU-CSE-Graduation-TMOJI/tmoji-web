@@ -1,15 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import type { BoundingBox } from "@/components/common/crop/ImageCropper";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ClipLoader } from "react-spinners";
+import type { Area } from "@/api/schema/common";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
 
 import ListSelect from "@/components/common/select/ListSelect";
 import ResetIcon from "@/assets/icons/refresh.svg?react";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
-import sampleImageUrl from "@/assets/sample_image.jpg";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
 import ImageCropper from "@/components/common/crop/ImageCropper";
+import serviceApi from "@/api/handler/service";
+import { IMAGE_URL_BASE } from "@/constansts";
+import step2Api from "@/api/handler/step-2";
 
 type SearchParams = {
   id: number;
@@ -25,7 +29,41 @@ export const Route = createFileRoute("/step-two/bounding")({
 });
 
 function RouteComponent() {
-  const [boundingBoxes, setBoundingBoxes] = useState<Array<BoundingBox>>([
+  const { id } = Route.useSearch();
+
+  const navigate = useNavigate();
+
+  // API
+  const { data: serviceData } = useQuery({
+    queryKey: [...serviceApi.KEYS.getService(), id],
+    queryFn: () => serviceApi.getService(id),
+  });
+
+  const { mutate } = useMutation({
+    mutationKey: [...step2Api.KEYS.postAreas(), id],
+    mutationFn: () =>
+      step2Api.postAreas({
+        serviceId: id,
+        areas: boundingBoxes.map((area) => ({
+          x1: Math.round(area.x1),
+          x2: Math.round(area.x2),
+          y1: Math.round(area.y1),
+          y2: Math.round(area.y2),
+        })),
+      }),
+    onSuccess: (data) => {
+      navigate({
+        to: "/step-two/detecting",
+        search: { id: data.id },
+      });
+    },
+    onError: () => {
+      navigate({ to: "/" });
+    },
+  });
+
+  // State
+  const [boundingBoxes, setBoundingBoxes] = useState<Array<Area>>([
     {
       x1: 0,
       x2: 100,
@@ -34,11 +72,19 @@ function RouteComponent() {
     },
   ]);
   const [selected, setSelected] = useState<number>(0);
-  const navigate = useNavigate();
 
   useEffect(() => {
     console.log(boundingBoxes);
   }, [boundingBoxes]);
+
+  if (!serviceData)
+    return (
+      <div>
+        <ContentWrapper>
+          <ClipLoader color={"#575757"} size={100} />
+        </ContentWrapper>
+      </div>
+    );
 
   return (
     <div className={c()}>
@@ -97,7 +143,7 @@ function RouteComponent() {
           </div>
         </div>
         <ImageCropper
-          imgSrc={sampleImageUrl}
+          imgSrc={`${IMAGE_URL_BASE}/${serviceData.originImage.filename}`}
           boundingBoxes={boundingBoxes}
           selectedIndex={selected}
           onChange={(newBoundingBoxes) => {
@@ -115,10 +161,7 @@ function RouteComponent() {
         >
           <SquareIconButton
             onClick={() => {
-              navigate({
-                to: "/step-two/detecting",
-                search: { id: 0 },
-              });
+              mutate();
             }}
           >
             <NextIcon width={40} height={40} />

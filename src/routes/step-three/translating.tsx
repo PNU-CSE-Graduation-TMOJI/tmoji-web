@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import type { BoundingBox } from "@/components/common/crop/ImageCropper";
 import type {
   RowMode,
   TranslateLanguage,
 } from "@/components/common/list/TmojiList";
+import type { Area } from "@/api/schema/common";
 import ImageCropper from "@/components/common/crop/ImageCropper";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
@@ -17,7 +17,7 @@ type SearchParams = {
   id: number;
 };
 
-const SAMPLE_BOUNDING_BOX: Array<BoundingBox> = [
+const SAMPLE_BOUNDING_BOX: Array<Area> = [
   {
     x1: 41,
     x2: 259,
@@ -74,7 +74,7 @@ export const Route = createFileRoute("/step-three/translating")({
 
 function RouteComponent() {
   const [boundingBoxes, setBoundingBoxes] =
-    useState<Array<BoundingBox>>(SAMPLE_BOUNDING_BOX);
+    useState<Array<Area>>(SAMPLE_BOUNDING_BOX);
   const [texts, setTexts] = useState<Array<string>>(SAMPLE_TEXTS);
   const [selected, setSelected] = useState<number>(0);
   const [rowMode, setRowMode] = useState<RowMode>("NORMAL");
@@ -111,8 +111,8 @@ function RouteComponent() {
               setTexts(newTexts);
               setSelected(newSelectedText);
             }}
-            onRowModeChange={(rowMode) => {
-              setRowMode(rowMode);
+            onRowModeChange={(newRowMode) => {
+              setRowMode(newRowMode);
             }}
             onDelete={(deletedIndex) => {
               const newBoundingBoxes = [...boundingBoxes];

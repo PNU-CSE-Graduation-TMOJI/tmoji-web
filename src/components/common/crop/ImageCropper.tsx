@@ -1,20 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import { ClipLoader } from "react-spinners";
+import type { Area } from "@/api/schema/common";
 import c from "@/utils/c";
 import MoveIcon from "@/assets/icons/four-arrow-white.svg?react";
 import DeleteIcon from "@/assets/icons/delete-white.svg?react";
 
-export interface BoundingBox {
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-}
-
 interface ImageCropperProps {
   imgSrc: string;
-  boundingBoxes: Array<BoundingBox>;
+  boundingBoxes: Array<Area>;
   selectedIndex: number;
-  onChange?: (newBoundingBoxes: Array<BoundingBox>) => void; // 없으면 보기 모드
+  onChange?: (newBoundingBoxes: Array<Area>) => void; // 없으면 보기 모드
   onOverlappingIndicesChange?: (newOverlappingIndices: Set<number>) => void;
 }
 
@@ -22,8 +17,6 @@ function getImageSize(src: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = src;
-
-    img.crossOrigin = "anonymous";
 
     img.onload = () => {
       resolve({
@@ -36,11 +29,11 @@ function getImageSize(src: string): Promise<{ width: number; height: number }> {
   });
 }
 
-function isOverlapping(a: BoundingBox, b: BoundingBox): boolean {
+function isOverlapping(a: Area, b: Area): boolean {
   return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
 }
 
-function getOverlappingIndices(boxes: Array<BoundingBox>): Set<number> {
+function getOverlappingIndices(boxes: Array<Area>): Set<number> {
   const overlapping = new Set<number>();
 
   for (let i = 0; i < boxes.length; i++) {
@@ -91,8 +84,8 @@ export default function ImageCropper({
 
     const updateThumb = () => {
       const { scrollWidth, clientWidth, scrollLeft } = el;
-      const ratio = clientWidth / scrollWidth;
-      const newWidth = ratio * clientWidth;
+      const scrollRatio = clientWidth / scrollWidth;
+      const newWidth = scrollRatio * clientWidth;
       const newLeft = (scrollLeft / scrollWidth) * clientWidth;
       setThumbWidth(newWidth);
       setThumbLeft(newLeft);
@@ -147,7 +140,7 @@ export default function ImageCropper({
 
     let startX = 0;
     let startY = 0;
-    let boundingArea: BoundingBox = { x1: 0, x2: 0, y1: 0, y2: 0 };
+    let boundingArea: Area = { x1: 0, x2: 0, y1: 0, y2: 0 };
 
     const onMouseDown = (e: MouseEvent) => {
       startX = e.clientX;
@@ -162,7 +155,7 @@ export default function ImageCropper({
       const dy = (e.clientY - startY) / ratio;
 
       const newBoundingBoxes = [...boundingBoxes];
-      const newBox: BoundingBox = {
+      const newBox: Area = {
         x1: boundingArea.x1 + dx,
         x2: boundingArea.x2 + dx,
         y1: boundingArea.y1 + dy,
@@ -199,7 +192,7 @@ export default function ImageCropper({
 
     let startX = 0;
     let startY = 0;
-    let boundingArea: BoundingBox = { x1: 0, x2: 0, y1: 0, y2: 0 };
+    let boundingArea: Area = { x1: 0, x2: 0, y1: 0, y2: 0 };
 
     const onMouseDown = (e: MouseEvent) => {
       startX = e.clientX;
@@ -214,7 +207,7 @@ export default function ImageCropper({
       const dy = (e.clientY - startY) / ratio;
 
       const newBoundingBoxes = [...boundingBoxes];
-      const newBox: BoundingBox = {
+      const newBox: Area = {
         x1: boundingArea.x1,
         x2: boundingArea.x2 + dx,
         y1: boundingArea.y1,
@@ -420,7 +413,17 @@ export default function ImageCropper({
             {/* ✅ Custom scrollbar */}
           </>
         ) : (
-          "loading"
+          <div
+            className={c(
+              "h-full",
+              "w-full",
+              "flex",
+              "justify-center",
+              "items-center",
+            )}
+          >
+            <ClipLoader color={"#575757"} size={100} />
+          </div>
         )}
       </div>
       <div className="absolute bottom-1 left-0 w-full h-2 pointer-events-none">
