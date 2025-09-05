@@ -8,13 +8,13 @@ import type { Service } from "@/api/schema/service";
 import ImageCropper from "@/components/common/crop/ImageCropper";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
-import sampleImageUrl from "@/assets/sample_image.jpg";
 import TmojiList from "@/components/common/list/TmojiList";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
 import step3Api from "@/api/handler/step-3";
 import serviceApi from "@/api/handler/service";
 import step4Api from "@/api/handler/step-4";
+import { IMAGE_URL_BASE } from "@/constansts";
 
 type SearchParams = {
   id: number;
@@ -158,7 +158,7 @@ function RouteComponent() {
         subtitle="번역이 올바른지 확인 후 필요 시 수정해 주세요."
       >
         <ImageCropper
-          imgSrc={sampleImageUrl}
+          imgSrc={`${IMAGE_URL_BASE}/${serviceData.originImage.filename}`}
           boundingBoxes={boundingBoxes}
           selectedIndex={selected}
         />
@@ -181,7 +181,7 @@ function RouteComponent() {
               target: serviceData.targetLanguage!,
             }}
             selectedIndex={selected}
-            onChange={(newTexts, newSelectedText) => {
+            onTextChange={(newTexts) => {
               if (texts.length === newTexts.length) {
                 newTexts.forEach((newText, idx) => {
                   if (
@@ -196,6 +196,8 @@ function RouteComponent() {
                 });
               }
               setTexts(newTexts);
+            }}
+            onSelectChange={(newSelectedText) => {
               setSelected(newSelectedText);
             }}
             onRowModeChange={(newRowMode) => {

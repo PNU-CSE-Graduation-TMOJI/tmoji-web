@@ -120,10 +120,6 @@ function RouteComponent() {
     }
   }, [statusData]);
 
-  useEffect(() => {
-    console.log(serviceData);
-  }, [serviceData]);
-
   if (!statusData || !serviceData || !boundingBoxes || !texts)
     return (
       <div>
@@ -160,7 +156,7 @@ function RouteComponent() {
           <TmojiList
             texts={texts}
             selectedIndex={selected}
-            onChange={(newTexts, newSelectedText) => {
+            onTextChange={(newTexts) => {
               if (texts.length === newTexts.length) {
                 newTexts.forEach((newText, idx) => {
                   if (
@@ -175,6 +171,8 @@ function RouteComponent() {
                 });
               }
               setTexts(newTexts);
+            }}
+            onSelectChange={(newSelectedText) => {
               setSelected(newSelectedText);
             }}
             onRowModeChange={(newRowMode) => {
