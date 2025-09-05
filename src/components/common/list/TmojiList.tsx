@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import c from "@/utils/c";
 
 import ZoomIcon from "@/assets/icons/zoom-mini.svg?react";
@@ -12,7 +12,8 @@ interface TmojiListProps {
   originTexts?: Array<string>;
   translateLanguage?: TranslateLanguage;
   selectedIndex: number;
-  onChange?: (newTexts: Array<string>, newSelectedIndex: number) => void;
+  onTextChange?: (newTexts: Array<string>) => void;
+  onSelectChange?: (newSelectedIndex: number) => void;
   onRowModeChange?: (rowMode: RowMode) => void;
   onDelete?: (deletedIndex: number) => void;
 }
@@ -41,7 +42,8 @@ export default function TmojiList({
   originTexts,
   translateLanguage,
   selectedIndex,
-  onChange,
+  onTextChange,
+  onSelectChange,
   onRowModeChange,
   onDelete,
 }: TmojiListProps) {
@@ -78,7 +80,8 @@ export default function TmojiList({
       )}
     >
       {texts.map((t, idx) => {
-        if (rowMode !== "NORMAL" && selectedIndex !== idx) return <></>;
+        if (rowMode !== "NORMAL" && selectedIndex !== idx)
+          return <Fragment key={`TmojiList-Row-${idx}`} />;
         return (
           <div
             key={`TmojiList-Row-${idx}`}
@@ -93,6 +96,7 @@ export default function TmojiList({
                 : "hover:bg-tmoji-grey-radial",
               "rounded-full",
             )}
+            onClick={() => onSelectChange && onSelectChange(idx)}
           >
             <div
               className={c("p-2", "gap-2", "flex", "relative", "items-center")}
@@ -358,7 +362,7 @@ export default function TmojiList({
                   onClick={() => {
                     const newTexts = [...texts];
                     newTexts[selectedIndex] = textEdit ?? "error";
-                    onChange && onChange(newTexts, selectedIndex);
+                    onTextChange && onTextChange(newTexts);
                     setRowMode("NORMAL");
                   }}
                   className={c(
@@ -419,7 +423,7 @@ export default function TmojiList({
                   onClick={() => {
                     const newTexts = [...texts];
                     newTexts.splice(selectedIndex, 1);
-                    onChange && onChange(newTexts, selectedIndex);
+                    onTextChange && onTextChange(newTexts);
                     onDelete && onDelete(selectedIndex);
                     setRowMode("NORMAL");
                   }}
