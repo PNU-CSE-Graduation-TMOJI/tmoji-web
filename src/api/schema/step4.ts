@@ -5,6 +5,6 @@ export const GetServiceStatusResSchema = z.object({
   isCompleted: z.boolean(),
   id: z.number(),
   status: ServiceStatusSchema,
-  composedImageFilename: z.string(),
+  composedImageFilename: z.nullable(z.string()),
 });
 export type GetServiceStatusRes = z.infer<typeof GetServiceStatusResSchema>;
