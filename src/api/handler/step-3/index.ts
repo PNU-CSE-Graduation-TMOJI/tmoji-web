@@ -1,17 +1,13 @@
 import z from "zod";
-
 import type {
   GetServiceStatusRes,
   PatchAreaTextsReq,
   PostTranslateReq,
 } from "@/api/schema/step3";
 import type { AreaDetail } from "@/api/schema/common";
+import { GetServiceStatusResSchema } from "@/api/schema/step3";
 import client from "@/api/core/core";
 import { ApiError } from "@/api/core";
-import {
-  GetServiceStatusResSchema,
-  PostAreasResSchema,
-} from "@/api/schema/step2";
 import { AreaDetailSchema } from "@/api/schema/common";
 
 const step3Api = {
@@ -29,7 +25,6 @@ const step3Api = {
         `/api/v1/step-3/service/${serviceId}/translate`,
         request,
       );
-      PostAreasResSchema.parse(res);
       return res;
     } catch (error) {
       if (error instanceof ApiError) {

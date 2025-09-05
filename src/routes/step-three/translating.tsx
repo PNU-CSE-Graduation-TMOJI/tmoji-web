@@ -14,6 +14,7 @@ import SquareIconButton from "@/components/common/button/SquareIconButton";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
 import step3Api from "@/api/handler/step-3";
 import serviceApi from "@/api/handler/service";
+import step4Api from "@/api/handler/step-4";
 
 type SearchParams = {
   id: number;
@@ -82,6 +83,22 @@ function RouteComponent() {
     },
   });
 
+  const { mutate: mutateCompose } = useMutation({
+    mutationKey: [...step4Api.KEYS.postCompose(), id],
+    mutationFn: () => step4Api.postCompose(id),
+    onSuccess: () => {
+      navigate({
+        to: "/result",
+        search: { id },
+      });
+    },
+    onError: () => {
+      navigate({
+        to: "/",
+      });
+    },
+  });
+
   // state
   const [serviceData, setServiceData] = useState<Service>();
   const [boundingBoxes, setBoundingBoxes] = useState<Array<Area>>();
@@ -103,7 +120,7 @@ function RouteComponent() {
 
     if (statusData && statusData.isCompleted) {
       if (!statusData.areas) {
-        alert("OCR 결과값을 가져오는데 실패하였습니다.");
+        alert("번역 결과값을 가져오는데 실패하였습니다.");
         navigate({ to: "/" });
         return;
       }
@@ -199,11 +216,7 @@ function RouteComponent() {
           {rowMode === "NORMAL" ? (
             <SquareIconButton
               onClick={() => {
-                navigate({
-                  to: "/result",
-                  search: { id: 0 },
-                });
-                return;
+                mutateCompose();
               }}
             >
               <NextIcon width={40} height={40} />
