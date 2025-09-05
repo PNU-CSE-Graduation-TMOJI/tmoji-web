@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import type {
-  RowMode,
-  TranslateLanguage,
-} from "@/components/common/list/TmojiList";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ClipLoader } from "react-spinners";
+import type { RowMode } from "@/components/common/list/TmojiList";
 import type { Area } from "@/api/schema/common";
+import type { Service } from "@/api/schema/service";
 import ImageCropper from "@/components/common/crop/ImageCropper";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
@@ -12,55 +12,11 @@ import sampleImageUrl from "@/assets/sample_image.jpg";
 import TmojiList from "@/components/common/list/TmojiList";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
+import step3Api from "@/api/handler/step-3";
+import serviceApi from "@/api/handler/service";
 
 type SearchParams = {
   id: number;
-};
-
-const SAMPLE_BOUNDING_BOX: Array<Area> = [
-  {
-    x1: 41,
-    x2: 259,
-    y1: 244,
-    y2: 289,
-  },
-  {
-    x1: 36,
-    x2: 90,
-    y1: 224,
-    y2: 244,
-  },
-  {
-    x1: 91,
-    x2: 135,
-    y1: 223,
-    y2: 244,
-  },
-  {
-    x1: 41,
-    x2: 259,
-    y1: 340,
-    y2: 380,
-  },
-];
-
-const SAMPLE_ORIGIN_TEXTS: Array<string> = [
-  "中島公園駅",
-  "出入口",
-  "南北線",
-  "Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example",
-];
-
-const SAMPLE_TEXTS: Array<string> = [
-  "나카지마공원역",
-  "출입구",
-  "남북선",
-  "Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example Long Text Example",
-];
-
-const SAMPLE_TRANSLATE_LANGUAGE: TranslateLanguage = {
-  origin: "JP",
-  target: "KO",
 };
 
 export const Route = createFileRoute("/step-three/translating")({
@@ -73,12 +29,110 @@ export const Route = createFileRoute("/step-three/translating")({
 });
 
 function RouteComponent() {
-  const [boundingBoxes, setBoundingBoxes] =
-    useState<Array<Area>>(SAMPLE_BOUNDING_BOX);
-  const [texts, setTexts] = useState<Array<string>>(SAMPLE_TEXTS);
+  const { id } = Route.useSearch();
+  const queryClient = useQueryClient();
+
+  // API
+  const { data: statusData } = useQuery({
+    queryKey: [...step3Api.KEYS.getServiceStatus(), id],
+    queryFn: () => step3Api.getServiceStatus(id),
+    refetchOnWindowFocus: false,
+    refetchInterval: (query) => {
+      const needRefetch =
+        query.state.data && query.state.data.isCompleted ? false : 3000;
+      return needRefetch;
+    },
+  });
+
+  const { mutate: mutatePatchText } = useMutation({
+    mutationKey: [...step3Api.KEYS.patchAreaText(), id],
+    mutationFn: (variables: {
+      serviceId: number;
+      areaId: number;
+      newText: string;
+    }) =>
+      step3Api.patchAreaText(variables.serviceId, variables.areaId, {
+        newTranslatedText: variables.newText,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step3Api.KEYS.getServiceStatus(), id],
+      });
+    },
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step3Api.KEYS.getServiceStatus(), id],
+      });
+    },
+  });
+
+  const { mutate: mutateDeleteText } = useMutation({
+    mutationKey: [...step3Api.KEYS.deleteAreaText(), id],
+    mutationFn: (variables: { serviceId: number; areaId: number }) =>
+      step3Api.deleteAreaText(variables.serviceId, variables.areaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step3Api.KEYS.getServiceStatus(), id],
+      });
+    },
+    onError: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...step3Api.KEYS.getServiceStatus(), id],
+      });
+    },
+  });
+
+  // state
+  const [serviceData, setServiceData] = useState<Service>();
+  const [boundingBoxes, setBoundingBoxes] = useState<Array<Area>>();
+  const [texts, setTexts] = useState<Array<string>>();
+  const [originTexts, setOriginTexts] = useState<Array<string>>();
   const [selected, setSelected] = useState<number>(0);
   const [rowMode, setRowMode] = useState<RowMode>("NORMAL");
   const navigate = useNavigate();
+
+  // useEffect
+  useEffect(() => {
+    const getServiceData = async () => {
+      const data = await queryClient.fetchQuery({
+        queryKey: [...serviceApi.KEYS.getService(), id],
+        queryFn: () => serviceApi.getService(id),
+      });
+      setServiceData(data);
+    };
+
+    if (statusData && statusData.isCompleted) {
+      if (!statusData.areas) {
+        alert("OCR 결과값을 가져오는데 실패하였습니다.");
+        navigate({ to: "/" });
+        return;
+      }
+
+      getServiceData();
+      setBoundingBoxes(
+        statusData.areas.map((area) => ({
+          x1: area.x1,
+          x2: area.x2,
+          y1: area.y1,
+          y2: area.y2,
+        })),
+      );
+      setTexts(statusData.areas.map((area) => area.translatedText));
+      setOriginTexts(statusData.areas.map((area) => area.originText));
+    }
+  }, [statusData]);
+
+  if (!statusData || !serviceData || !boundingBoxes || !texts || !originTexts)
+    return (
+      <div>
+        <ContentWrapper
+          title="번역 과정이 진행되고 있습니다."
+          subtitle="잠시 기다려 주십시오."
+        >
+          <ClipLoader color={"#575757"} size={100} />
+        </ContentWrapper>
+      </div>
+    );
 
   return (
     <div className={c()}>
@@ -104,10 +158,26 @@ function RouteComponent() {
           <TmojiList
             type="TRANSLATE"
             texts={texts}
-            originTexts={SAMPLE_ORIGIN_TEXTS}
-            translateLanguage={SAMPLE_TRANSLATE_LANGUAGE}
+            originTexts={originTexts}
+            translateLanguage={{
+              origin: serviceData.originLanguage,
+              target: serviceData.targetLanguage!,
+            }}
             selectedIndex={selected}
             onChange={(newTexts, newSelectedText) => {
+              if (texts.length === newTexts.length) {
+                newTexts.forEach((newText, idx) => {
+                  if (
+                    statusData.areas &&
+                    statusData.areas[idx].originText !== newText
+                  )
+                    mutatePatchText({
+                      serviceId: id,
+                      areaId: statusData.areas[idx].id,
+                      newText,
+                    });
+                });
+              }
               setTexts(newTexts);
               setSelected(newSelectedText);
             }}
@@ -115,9 +185,15 @@ function RouteComponent() {
               setRowMode(newRowMode);
             }}
             onDelete={(deletedIndex) => {
-              const newBoundingBoxes = [...boundingBoxes];
-              newBoundingBoxes.splice(deletedIndex, 1);
-              setBoundingBoxes(newBoundingBoxes);
+              if (statusData.areas) {
+                mutateDeleteText({
+                  serviceId: id,
+                  areaId: statusData.areas[deletedIndex].id,
+                });
+                const newBoundingBoxes = [...boundingBoxes];
+                newBoundingBoxes.splice(deletedIndex, 1);
+                setBoundingBoxes(newBoundingBoxes);
+              }
             }}
           />
           {rowMode === "NORMAL" ? (

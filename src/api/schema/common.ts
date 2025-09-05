@@ -37,3 +37,8 @@ export const AreaDetailSchema = AreaSchema.extend({
   originText: z.string(),
 });
 export type AreaDetail = z.infer<typeof AreaDetailSchema>;
+
+export const AreaTranslatedSchema = AreaDetailSchema.extend({
+  translatedText: z.string(),
+});
+export type AreaTranslated = z.infer<typeof AreaTranslatedSchema>;
