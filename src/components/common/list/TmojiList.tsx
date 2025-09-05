@@ -93,9 +93,6 @@ export default function TmojiList({
                 : "hover:bg-tmoji-grey-radial",
               "rounded-full",
             )}
-            onClick={() => {
-              onChange && onChange(texts, idx);
-            }}
           >
             <div
               className={c("p-2", "gap-2", "flex", "relative", "items-center")}

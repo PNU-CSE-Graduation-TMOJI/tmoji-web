@@ -1,11 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ClipLoader } from "react-spinners";
 import SquareIconButton from "@/components/common/button/SquareIconButton";
 import ListSelect from "@/components/common/select/ListSelect";
 import ContentWrapper from "@/components/ContentWrapper";
 import c from "@/utils/c";
 
 import NextIcon from "@/assets/icons/right-arrow.svg?react";
+import step3Api from "@/api/handler/step-3";
+import serviceApi from "@/api/handler/service";
 
 type SearchParams = {
   id: number;
@@ -29,14 +33,48 @@ export const Route = createFileRoute("/step-two/language")({
 });
 
 function RouteComponent() {
+  const { id } = Route.useSearch();
   const navigate = useNavigate();
-  const [originLanguage] = useState<Language>("JP");
+
+  // API
+  const { data } = useQuery({
+    queryKey: [...serviceApi.KEYS.getService(), id],
+    queryFn: () => serviceApi.getService(id),
+  });
+
+  const { mutate } = useMutation({
+    mutationKey: [...step3Api.KEYS.postTranslate(), id],
+    mutationFn: ({ targetLanguage }: { targetLanguage: Language }) =>
+      step3Api.postTranslate(id, { targetLanguage: targetLanguage }),
+    onSuccess: () => {
+      navigate({
+        to: "/step-three/translating",
+        search: { id },
+      });
+    },
+    onError: () => {
+      navigate({ to: "/" });
+    },
+  });
+
+  // state
   const [targetLanguage, setTargetLanguage] = useState<Language | null>(null);
   const filteredLanguageOptions = useMemo(() => {
     return Object.fromEntries(
-      Object.entries(languageOptions).filter(([key]) => key !== originLanguage),
+      Object.entries(languageOptions).filter(([key]) => {
+        return key !== data?.originLanguage;
+      }),
     ) as Partial<Record<Language, string>>;
-  }, [originLanguage]);
+  }, [data]);
+
+  if (!data)
+    return (
+      <div>
+        <ContentWrapper>
+          <ClipLoader color={"#575757"} size={100} />
+        </ContentWrapper>
+      </div>
+    );
 
   return (
     <div className={c()}>
@@ -67,7 +105,7 @@ function RouteComponent() {
                 "font-medium",
               )}
             >
-              원본 - {languageOptions[originLanguage]}
+              원본 - {languageOptions[data.originLanguage]}
             </button>
           </div>
           <ListSelect
@@ -80,10 +118,7 @@ function RouteComponent() {
         {targetLanguage ? (
           <SquareIconButton
             onClick={() => {
-              navigate({
-                to: "/step-three/translating",
-                search: { id: 0 },
-              });
+              mutate({ targetLanguage: targetLanguage });
             }}
           >
             <NextIcon width={40} height={40} />
