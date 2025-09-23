@@ -1,6 +1,6 @@
 {
-  "short_name": "TanStack App",
-  "name": "Create TanStack App Sample",
+  "short_name": "TMOJI",
+  "name": "TMOJI - 이미지 번역 서비스",
   "icons": [
     {
       "src": "favicon.ico",
