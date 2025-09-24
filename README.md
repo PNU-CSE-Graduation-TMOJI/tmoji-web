@@ -4,9 +4,16 @@
 
 > 폰트 스타일을 유지하며 이미지를 번역하는 서비스
 
-#### [TMOJI 웹 사이트 바로가기](https://tmoji.org)
+### [TMOJI 웹 사이트 바로가기](https://tmoji.org)
+
+![간단한 시연 사진](./docs/example.gif)
+
+#### [TMOJI SERVERAPI 명세서 바로가기](https://api.tmoji.org/docs)
+
+#### [TMOJI UI/UX 화면 설계서 바로가기](https://www.figma.com/design/JvbYnuSH3OT1lQWxcJpusq/TMOJI?node-id=67-2&t=VsGnnqBIsh5wtLi5-1)
 
 - 이미지 번역 서비스 TMOJI의 WEB 파트 레포지토리입니다.
+
 
 # Requires
 
