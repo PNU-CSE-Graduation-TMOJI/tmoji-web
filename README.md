@@ -104,3 +104,52 @@ React-Query 사용 방법은 다음 문서를 참고해주세요. [React-Query d
 📃prettierrrc.cjs : Formatting 관련 prettier 설정 파일
 📃README.md
 ```
+
+# 환경변수
+``` bash
+# .env
+
+VITE_API_URL=YOUR_BE_SERVER_URL # https://api.tmoji.org
+```
+
+# CI/CD
+본 프로젝트는 Github Actions를 이용하여 자동 배포되고 있습니다. `.github/workflows/deploy.yml` 파일을 참고해주세요.
+
+`main` -> `prod`로 PR을 통해 Merge된다면 Github Actions가 이를 감지해 새로 빌드한 후 AWS S3 Bucket으로 업로드, AWS Cloudfront의 캐시를 무효화하여 웹 페이지를 갱신하고 있습니다.
+
+# TMOJI 파트별 링크
+> 각 파트별 자세한 내용은 아래 Repository에 접속하여 확인할 수 있습니다.
+
+<table>
+  <thead>
+    <tr>
+      <th>분류</th>
+      <th>URL</th>
+      <th>설명</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="3">텍스트 변환 모델</td>
+      <td><a href='https://github.com/PNU-CSE-Graduation-TMOJI/TextCtrl-Translate'>TextCtrl-Translate</a></td>
+      <td>한국어 환경에 맞게 파인튜닝된 텍스트 변환 모델</td>
+    </tr>
+    <tr>
+      <td><a href='https://github.com/PNU-CSE-Graduation-TMOJI/ko_trocr_tr'>ko-trocr-tr</a></td>
+      <td>한국어 환경 TextCtrl에 필요한 한국어 OCR 모델</td>
+    </tr>
+    <tr>
+      <td><a href='https://github.com/PNU-CSE-Graduation-TMOJI/SRNet-Datagen_kr'>SRNet-Datagen(ko)</a></td>
+      <td>한국어 환경의 TextCtrl 학습에 필요한 데이터셋 Generator</td>
+    </tr>
+    <tr>
+      <td rowspan="2">웹 서비스</td>
+      <td><a href='https://github.com/PNU-CSE-Graduation-TMOJI/tmoji-web'>웹(FE)</a></td>
+      <td>TMOJI 프론트엔드</td>
+    </tr>
+    <tr>
+      <td><a href='https://github.com/PNU-CSE-Graduation-TMOJI/tmoji-server'>서버(BE)</a></td>
+      <td>TMOJI 백엔드</td>
+    </tr>
+  </tbody>
+</table>
